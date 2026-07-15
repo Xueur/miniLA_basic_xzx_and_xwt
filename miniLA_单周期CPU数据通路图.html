@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>miniLA 单周期CPU数据通路图</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#f0f2f5;display:flex;flex-direction:column;align-items:center;padding:20px;font-family:'Microsoft YaHei',Arial,sans-serif}
+  h1{font-size:26px;margin-bottom:6px;color:#1a1a2e}
+  .subtitle{font-size:13px;color:#666;margin-bottom:8px}
+  .legend{display:flex;gap:30px;margin-bottom:12px;flex-wrap:wrap;font-size:13px}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .legend svg{flex-shrink:0}
+  svg.main{background:#fff;border:1px solid #d0d5dd;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+  .tip{font-size:12px;color:#888;margin-top:6px;max-width:1400px;text-align:center}
+</style>
+</head>
+<body>
+
+<h1>miniLA 单周期CPU — 完整数据通路图</h1>
+<p class="subtitle">基于 cpu_core.v 结构，覆盖全部37条A+B组指令的数据路径</p>
+
+<div class="legend">
+  <span><svg width="30" height="3"><line x1="0" y1="1.5" x2="30" y2="1.5" stroke="#2563eb" stroke-width="2.5"/></svg> 数据线</span>
+  <span><svg width="30" height="3"><line x1="0" y1="1.5" x2="30" y2="1.5" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,3"/></svg> 控制信号</span>
+  <span><svg width="30" height="3"><line x1="0" y1="1.5" x2="30" y2="1.5" stroke="#059669" stroke-width="2.5"/></svg> 地址线</span>
+  <span><svg width="30" height="3"><line x1="0" y1="1.5" x2="30" y2="1.5" stroke="#7c3aed" stroke-width="2"/></svg> 指令/寄存器索引</span>
+  <span>&#9633; 组合逻辑</span>
+  <span>&#9633; 时序逻辑</span>
+  <span>&#9671; 多路选择器MUX</span>
+</div>
+
+<svg class="main" viewBox="0 0 1400 860" width="1400" height="860" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ad" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="ac" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#dc2626"/></marker>
+    <marker id="aa" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#059669"/></marker>
+    <marker id="ai" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/></marker>
+  </defs>
+
+  <!-- ===== 阶段标签 ===== -->
+  <rect x="15" y="10" width="330" height="380" rx="10" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="8,3" opacity="0.4"/>
+  <text x="28" y="33" font-size="14" fill="#1d4ed8" font-weight="bold">IF — 取指阶段</text>
+  <rect x="360" y="10" width="330" height="380" rx="10" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="8,3" opacity="0.4"/>
+  <text x="373" y="33" font-size="14" fill="#b45309" font-weight="bold">ID — 译码阶段</text>
+  <rect x="705" y="10" width="320" height="380" rx="10" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="8,3" opacity="0.4"/>
+  <text x="718" y="33" font-size="14" fill="#047857" font-weight="bold">EX — 执行阶段</text>
+  <rect x="1040" y="10" width="345" height="380" rx="10" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="8,3" opacity="0.4"/>
+  <text x="1053" y="33" font-size="14" fill="#6d28d9" font-weight="bold">MEM — 访存阶段</text>
+  <rect x="15" y="430" width="1370" height="200" rx="10" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-dasharray="8,3" opacity="0.4"/>
+  <text x="28" y="453" font-size="14" fill="#0e7490" font-weight="bold">WB — 写回阶段</text>
+
+  <!-- ===== IF: PC ===== -->
+  <rect x="50" y="70" width="90" height="80" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="95" y="100" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a5f">PC</text>
+  <text x="95" y="118" text-anchor="middle" font-size="9" fill="#475569">程序计数器</text>
+  <text x="95" y="134" text-anchor="middle" font-size="9" fill="#64748b">pc[31:0]</text>
+
+  <!-- PC 输入 npc -->
+  <line x1="95" y1="70" x2="95" y2="58" stroke="#2563eb" stroke-width="2"/>
+  <text x="68" y="55" font-size="9" fill="#2563eb">npc[31:0]</text>
+
+  <!-- ===== IF: NPC ===== -->
+  <rect x="180" y="50" width="120" height="100" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="240" y="78" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a5f">NPC</text>
+  <text x="240" y="96" text-anchor="middle" font-size="9" fill="#475569">下一PC生成</text>
+  <text x="240" y="114" text-anchor="middle" font-size="9" fill="#64748b">npc[31:0]</text>
+  <text x="240" y="130" text-anchor="middle" font-size="9" fill="#64748b">pc4[31:0]</text>
+  <text x="240" y="144" text-anchor="middle" font-size="8" fill="#94a3b8">PC4 / BRANCH / JUMP</text>
+
+  <!-- NPC 输入 pc -->
+  <line x1="140" y1="95" x2="180" y2="85" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="150" y="80" font-size="9" fill="#2563eb">pc</text>
+
+  <!-- NPC ← npc_op -->
+  <line x1="195" y1="120" x2="195" y2="170" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ac)"/>
+  <text x="198" y="150" font-size="8" fill="#dc2626">npc_op[1:0]</text>
+
+  <!-- NPC → PC feedback -->
+  <line x1="180" y1="100" x2="50" y2="120" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="90" y="145" font-size="10" fill="#2563eb">npc</text>
+
+  <!-- ===== IF: Inst_ROM ===== -->
+  <rect x="35" y="190" width="270" height="65" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="170" y="216" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a5f">Inst_ROM (指令存储器)</text>
+  <text x="170" y="236" text-anchor="middle" font-size="9" fill="#64748b">ifetch_addr[31:0] → inst[31:0]</text>
+
+  <!-- PC → IROM -->
+  <line x1="95" y1="150" x2="95" y2="190" stroke="#059669" stroke-width="2.5" marker-end="url(#aa)"/>
+  <text x="37" y="174" font-size="9" fill="#059669">pc→addr</text>
+
+  <!-- IROM output: inst bus -->
+  <line x1="305" y1="220" x2="370" y2="220" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#ai)"/>
+  <text x="315" y="212" font-size="10" fill="#7c3aed" font-weight="bold">inst[31:0]</text>
+
+  <!-- inst distribution to ID stage -->
+  <line x1="370" y1="220" x2="370" y2="340" stroke="#7c3aed" stroke-width="2.5"/>
+  <!-- branch: inst[31:15] → Controller -->
+  <line x1="370" y1="340" x2="400" y2="340" stroke="#7c3aed" stroke-width="2"/>
+  <line x1="400" y1="340" x2="400" y2="80" stroke="#7c3aed" stroke-width="2" marker-end="url(#ai)"/>
+  <text x="405" y="180" font-size="9" fill="#7c3aed">inst[31:15]</text>
+
+  <!-- inst bus to RF and EXT address lines -->
+  <line x1="370" y1="265" x2="500" y2="265" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="410" y="258" font-size="8" fill="#7c3aed">inst[9:5]</text>
+  <line x1="370" y1="280" x2="500" y2="280" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="410" y="275" font-size="8" fill="#7c3aed">inst[14:10]</text>
+  <line x1="370" y1="295" x2="500" y2="295" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="410" y="292" font-size="8" fill="#7c3aed">inst[4:0]</text>
+
+  <!-- inst to EXT -->
+  <line x1="370" y1="325" x2="700" y2="325" stroke="#7c3aed" stroke-width="1.5"/>
+  <line x1="700" y1="325" x2="700" y2="115" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ai)"/>
+  <text x="565" y="215" font-size="9" fill="#7c3aed">inst[25:0] (imm)</text>
+
+  <!-- ===== ID: Controller ===== -->
+  <rect x="405" y="55" width="150" height="90" rx="6" fill="#fce4ec" stroke="#b91c1c" stroke-width="2"/>
+  <text x="480" y="80" text-anchor="middle" font-size="15" font-weight="bold" fill="#7f1d1d">Controller</text>
+  <text x="480" y="100" text-anchor="middle" font-size="9" fill="#475569">控制器 (译码器)</text>
+  <text x="480" y="118" text-anchor="middle" font-size="9" fill="#64748b">inst[31:15]</text>
+  <text x="480" y="134" text-anchor="middle" font-size="9" fill="#64748b">→ 控制信号</text>
+
+  <!-- Controller control signals panel -->
+  <rect x="375" y="155" width="300" height="230" rx="5" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+  <text x="525" y="173" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="bold">控制信号总线 (Controller输出)</text>
+  <line x1="390" y1="180" x2="660" y2="180" stroke="#fca5a5" stroke-width="0.5"/>
+  <text x="390" y="196" font-size="9" fill="#475569">npc_op[1:0]   — 下一PC选择 (PC4/BRCH/JMP)</text>
+  <text x="390" y="212" font-size="9" fill="#475569">ext_op[2:0]   — 立即数扩展方式 (5/12/12U/16/20/26)</text>
+  <text x="390" y="228" font-size="9" fill="#475569">alu_op[4:0]   — ALU运算类型</text>
+  <text x="390" y="244" font-size="9" fill="#475569">alua_sel        — ALU A口: SEL_PC(0) / SEL_R1(1)</text>
+  <text x="390" y="260" font-size="9" fill="#475569">alub_sel         — ALU B口: SEL_EXT(0) / SEL_R2(1)</text>
+  <text x="390" y="276" font-size="9" fill="#475569">r2_sel            — RF读口2: SEL_RD(0) / SEL_RK(1)</text>
+  <text x="390" y="292" font-size="9" fill="#475569">rf_we             — 寄存器写使能</text>
+  <text x="390" y="308" font-size="9" fill="#475569">rf_wsel[1:0]   — 写回数据选择 (ALU/EXT/RAM)</text>
+  <text x="390" y="324" font-size="9" fill="#475569">wr_sel            — 写寄存器号: Rr1(0-$ra) / RD(1)</text>
+  <text x="390" y="340" font-size="9" fill="#475569">ram_rop[2:0] — 读内存扩展 (N/W/B/BU/H/HU)</text>
+  <text x="390" y="356" font-size="9" fill="#475569">ram_wop[3:0]— 写内存宽度 (N/B/H/W)</text>
+  <text x="390" y="372" font-size="9" fill="#475569">is_mul/is_div — 乘除法标志位</text>
+
+  <!-- Control to NPC -->
+  <line x1="460" y1="155" x2="460" y2="145" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <line x1="460" y1="145" x2="195" y2="145" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ac)"/>
+
+  <!-- Control to EXT -->
+  <line x1="525" y1="155" x2="525" y2="145" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <line x1="525" y1="145" x2="740" y2="125" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ac)"/>
+  <text x="600" y="138" font-size="8" fill="#dc2626">ext_op</text>
+
+  <!-- Control to ALU -->
+  <line x1="620" y1="155" x2="620" y2="145" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <line x1="620" y1="145" x2="810" y2="240" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ac)"/>
+  <text x="700" y="185" font-size="8" fill="#dc2626">alu_op,alua_sel,alub_sel</text>
+
+  <!-- Control to RF -->
+  <line x1="450" y1="155" x2="450" y2="145" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <line x1="450" y1="145" x2="600" y2="180" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ac)"/>
+  <text x="490" y="160" font-size="8" fill="#dc2626">rf_we,rf_wsel,wr_sel,r2_sel</text>
+
+  <!-- Control to MREQ/MEXT -->
+  <line x1="670" y1="220" x2="1050" y2="220" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ac)"/>
+  <text x="800" y="212" font-size="8" fill="#dc2626">ram_rop[2:0], ram_wop[3:0]</text>
+
+  <!-- ===== ID: RF ===== -->
+  <rect x="570" y="250" width="120" height="110" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="630" y="278" text-anchor="middle" font-size="14" font-weight="bold" fill="#78350f">RF</text>
+  <text x="630" y="296" text-anchor="middle" font-size="9" fill="#475569">寄存器堆</text>
+  <text x="630" y="312" text-anchor="middle" font-size="9" fill="#64748b">32×32bit (r0≡0)</text>
+  <text x="630" y="330" text-anchor="middle" font-size="9" fill="#64748b">读: rR1,rR2 → rD1,rD2</text>
+  <text x="630" y="348" text-anchor="middle" font-size="9" fill="#64748b">写: we,wR,wD</text>
+
+  <!-- RF inputs from inst -->
+  <line x1="500" y1="265" x2="570" y2="285" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ai)"/>
+  <text x="505" y="278" font-size="8" fill="#7c3aed">rR1=inst[9:5]</text>
+  <line x1="500" y1="280" x2="570" y2="300" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ai)"/>
+  <text x="505" y="295" font-size="8" fill="#7c3aed">rR2=MUX(r2_sel)</text>
+
+  <!-- r2_sel MUX -->
+  <polygon points="490,273 525,265 525,293 490,301" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="508" y="283" text-anchor="middle" font-size="7" fill="#374151">r2</text>
+  <text x="508" y="292" text-anchor="middle" font-size="6" fill="#374151">sel</text>
+  <text x="478" y="268" font-size="7" fill="#6b7280">inst[14:10]</text>
+  <text x="478" y="298" font-size="7" fill="#6b7280">inst[4:0]</text>
+
+  <!-- RF output rD1 → ALU -->
+  <line x1="630" y1="280" x2="720" y2="280" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="660" y="270" font-size="10" fill="#2563eb">rD1[31:0]</text>
+
+  <!-- RF output rD2 → ALU and Store MREQ -->
+  <line x1="630" y1="305" x2="690" y2="305" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="650" y="298" font-size="10" fill="#2563eb">rD2[31:0]</text>
+
+  <!-- ===== ID: EXT ===== -->
+  <rect x="720" y="80" width="110" height="75" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="775" y="108" text-anchor="middle" font-size="14" font-weight="bold" fill="#78350f">EXT</text>
+  <text x="775" y="126" text-anchor="middle" font-size="9" fill="#475569">立即数扩展</text>
+  <text x="775" y="142" text-anchor="middle" font-size="9" fill="#64748b">imm[25:0]→ext[31:0]</text>
+
+  <!-- EXT output -->
+  <line x1="775" y1="155" x2="775" y2="195" stroke="#2563eb" stroke-width="2.5"/>
+  <line x1="775" y1="195" x2="730" y2="195" stroke="#2563eb" stroke-width="2.5"/>
+  <line x1="730" y1="195" x2="730" y2="305" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="800" y="180" font-size="10" fill="#2563eb">ext[31:0]</text>
+
+  <!-- ===== EX: ALU ===== -->
+  <rect x="740" y="250" width="130" height="115" rx="6" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+  <text x="805" y="278" text-anchor="middle" font-size="14" font-weight="bold" fill="#064e3b">ALU</text>
+  <text x="805" y="296" text-anchor="middle" font-size="9" fill="#475569">算术逻辑单元</text>
+  <text x="805" y="312" text-anchor="middle" font-size="9" fill="#64748b">a[31:0] ← MUX(alua_sel)</text>
+  <text x="805" y="328" text-anchor="middle" font-size="9" fill="#64748b">b[31:0] ← MUX(alub_sel)</text>
+  <text x="805" y="348" text-anchor="middle" font-size="9" fill="#64748b">c[31:0] (结果)</text>
+  <text x="805" y="362" text-anchor="middle" font-size="9" fill="#64748b">br (分支条件)</text>
+
+  <!-- alua_sel MUX before ALU A -->
+  <polygon points="710,272 740,266 740,282 710,288" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="725" y="276" text-anchor="middle" font-size="7" fill="#374151">alua</text>
+  <text x="725" y="285" text-anchor="middle" font-size="6" fill="#374151">sel</text>
+  <text x="695" y="268" font-size="7" fill="#6b7280">PC.pc</text>
+  <text x="695" y="286" font-size="7" fill="#6b7280">RF.rD1</text>
+  <line x1="740" y1="274" x2="760" y2="274" stroke="#2563eb" stroke-width="2" marker-end="url(#ad)"/>
+
+  <!-- alub_sel MUX before ALU B -->
+  <polygon points="710,318 740,312 740,328 710,334" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="725" y="322" text-anchor="middle" font-size="7" fill="#374151">alub</text>
+  <text x="725" y="331" text-anchor="middle" font-size="6" fill="#374151">sel</text>
+  <text x="695" y="314" font-size="7" fill="#6b7280">RF.rD2</text>
+  <text x="695" y="332" font-size="7" fill="#6b7280">EXT.ext</text>
+  <line x1="740" y1="320" x2="760" y2="320" stroke="#2563eb" stroke-width="2" marker-end="url(#ad)"/>
+
+  <!-- ALU br → NPC -->
+  <line x1="870" y1="355" x2="1000" y2="355" stroke="#2563eb" stroke-width="2.5"/>
+  <line x1="1000" y1="355" x2="1000" y2="100" stroke="#2563eb" stroke-width="2.5"/>
+  <line x1="1000" y1="100" x2="300" y2="100" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="600" y="95" font-size="10" fill="#2563eb">br (分支条件)</text>
+
+  <!-- ALU c → WB mux and MREQ -->
+  <line x1="870" y1="310" x2="960" y2="310" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="900" y="302" font-size="10" fill="#2563eb">c[31:0]</text>
+  <!-- to MREQ -->
+  <line x1="960" y1="310" x2="960" y2="130" stroke="#2563eb" stroke-width="2.5"/>
+  <line x1="960" y1="130" x2="1050" y2="130" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="980" y="220" font-size="9" fill="#2563eb">ram_addr</text>
+  <!-- to WB -->
+  <line x1="960" y1="310" x2="960" y2="490" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="975" y="410" font-size="10" fill="#2563eb">ALU.c</text>
+
+  <!-- ALU c[1:0] to MEXT byte_offs -->
+  <line x1="870" y1="370" x2="1120" y2="430" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ad)"/>
+  <text x="980" y="412" font-size="8" fill="#2563eb">c[1:0]→byte_offs</text>
+
+  <!-- ===== MEM: MREQ ===== -->
+  <rect x="1050" y="80" width="120" height="85" rx="6" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>
+  <text x="1110" y="108" text-anchor="middle" font-size="14" font-weight="bold" fill="#4c1d95">MREQ</text>
+  <text x="1110" y="126" text-anchor="middle" font-size="9" fill="#475569">访存请求生成</text>
+  <text x="1110" y="142" text-anchor="middle" font-size="9" fill="#64748b">da_ren[3:0]</text>
+  <text x="1110" y="156" text-anchor="middle" font-size="9" fill="#64748b">da_wen[3:0]</text>
+
+  <!-- rD2 to MREQ for stores -->
+  <line x1="630" y1="315" x2="630" y2="395" stroke="#2563eb" stroke-width="2"/>
+  <line x1="630" y1="395" x2="1085" y2="395" stroke="#2563eb" stroke-width="2"/>
+  <line x1="1085" y1="395" x2="1085" y2="165" stroke="#2563eb" stroke-width="2" marker-end="url(#ad)"/>
+  <text x="800" y="390" font-size="9" fill="#2563eb">rD2→ram_wdata (Store数据源)</text>
+
+  <!-- MREQ → Data_RAM -->
+  <line x1="1110" y1="165" x2="1110" y2="195" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="1120" y="185" font-size="9" fill="#2563eb">da_addr/ren/wen/wdata</text>
+
+  <!-- ===== MEM: Data_RAM ===== -->
+  <rect x="1045" y="200" width="130" height="70" rx="6" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>
+  <text x="1110" y="228" text-anchor="middle" font-size="14" font-weight="bold" fill="#4c1d95">Data_RAM</text>
+  <text x="1110" y="248" text-anchor="middle" font-size="9" fill="#475569">数据存储器</text>
+  <text x="1110" y="262" text-anchor="middle" font-size="9" fill="#64748b">rdata[31:0]</text>
+
+  <!-- Data_RAM → MEXT -->
+  <line x1="1110" y1="270" x2="1110" y2="385" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="1120" y="335" font-size="10" fill="#2563eb">rdata[31:0]</text>
+
+  <!-- ===== MEM: MEXT ===== -->
+  <rect x="1045" y="385" width="130" height="60" rx="6" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>
+  <text x="1110" y="410" text-anchor="middle" font-size="13" font-weight="bold" fill="#4c1d95">MEXT</text>
+  <text x="1110" y="428" text-anchor="middle" font-size="9" fill="#475569">读数据扩展</text>
+  <text x="1110" y="442" text-anchor="middle" font-size="8" fill="#64748b">B/BU/H/HU/W</text>
+
+  <!-- MEXT → WB mux -->
+  <line x1="1110" y1="445" x2="1110" y2="500" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="1120" y="480" font-size="10" fill="#2563eb">ram_ext[31:0]</text>
+
+  <!-- EXT output to WB (for LU12I.W) -->
+  <line x1="775" y1="160" x2="1050" y2="520" stroke="#2563eb" stroke-width="2" marker-end="url(#ad)"/>
+  <text x="900" y="530" font-size="10" fill="#2563eb">ext[31:0]</text>
+
+  <!-- ===== WB MUX ===== -->
+  <polygon points="840,485 910,478 910,512 840,519" fill="#e5e7eb" stroke="#4b5563" stroke-width="2"/>
+  <text x="875" y="498" text-anchor="middle" font-size="10" font-weight="bold" fill="#1f2937">WB MUX</text>
+  <text x="875" y="512" text-anchor="middle" font-size="7" fill="#6b7280">rf_wsel[1:0]</text>
+
+  <!-- WB MUX inputs -->
+  <line x1="960" y1="490" x2="910" y2="493" stroke="#2563eb" stroke-width="2" marker-end="url(#ad)"/>
+  <line x1="1050" y1="520" x2="910" y2="503" stroke="#2563eb" stroke-width="2" marker-end="url(#ad)"/>
+  <line x1="1110" y1="500" x2="910" y2="508" stroke="#2563eb" stroke-width="2" marker-end="url(#ad)"/>
+
+  <!-- WB MUX output → RF wD -->
+  <line x1="840" y1="498" x2="630" y2="498" stroke="#2563eb" stroke-width="2.5"/>
+  <line x1="630" y1="498" x2="630" y2="360" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ad)"/>
+  <text x="730" y="480" font-size="10" fill="#2563eb" font-weight="bold">rf_wD[31:0]</text>
+
+  <!-- wr_sel MUX -->
+  <polygon points="690,515 735,508 735,530 690,537" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="713" y="518" text-anchor="middle" font-size="7" fill="#374151">wr</text>
+  <text x="713" y="527" text-anchor="middle" font-size="6" fill="#374151">sel</text>
+  <text x="678" y="510" font-size="7" fill="#6b7280">5'h1</text>
+  <text x="678" y="535" font-size="7" fill="#6b7280">inst[4:0]</text>
+  <line x1="735" y1="518" x2="755" y2="518" stroke="#7c3aed" stroke-width="1.5"/>
+  <line x1="755" y1="518" x2="755" y2="360" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ai)"/>
+
+  <!-- ===== State flags ===== -->
+  <rect x="35" y="480" width="200" height="65" rx="5" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="135" y="498" text-anchor="middle" font-size="10" font-weight="bold" fill="#991b1b">状态标志与控制</text>
+  <text x="135" y="514" text-anchor="middle" font-size="9" fill="#475569">ld_st_flag — 等待访存完成</text>
+  <text x="135" y="530" text-anchor="middle" font-size="9" fill="#475569">mul_div_flag — 等待乘除法完成</text>
+  <text x="135" y="544" text-anchor="middle" font-size="8" fill="#6b7280">last cycle: rf_wR_r, alu_c_r, ram_rop_r</text>
+
+  <!-- rf_we1 generation -->
+  <rect x="255" y="480" width="220" height="65" rx="5" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="365" y="498" text-anchor="middle" font-size="10" font-weight="bold" fill="#991b1b">rf_we1 写使能生成</text>
+  <text x="365" y="514" text-anchor="middle" font-size="9" fill="#475569">= load_st & rvalid (load完成)</text>
+  <text x="365" y="530" text-anchor="middle" font-size="9" fill="#475569">| mul_div & !busy (乘除完成)</text>
+  <text x="365" y="544" text-anchor="middle" font-size="9" fill="#475569">| ifetch_valid & rf_we & !ld_st & !mul_div</text>
+
+  <!-- ===== Legend box ===== -->
+  <rect x="35" y="580" width="1340" height="45" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="55" y="600" font-size="11" font-weight="bold" fill="#334155">控制信号速查：</text>
+  <text x="180" y="600" font-size="10" fill="#475569">NPC: PC4(00)/BRANCH(10)/JUMP(11)</text>
+  <text x="430" y="600" font-size="10" fill="#475569">EXT: SIGN_5(001)/UNSIGN_12(010)/SIGN_12(011)/SIGN_16(100)/SIGN_26(101)/SIGN_20(110)</text>
+  <text x="55" y="616" font-size="10" fill="#475569">WB: WB_ALU(11)/WB_RAM(01)/WB_EXT(10)</text>
+  <text x="300" y="616" font-size="10" fill="#475569">ALU: ADD/SUB/AND/OR/XOR/SLL/SRL/SRA/SLT/SLTU/MUL/MULH/MULHU/DIV/DIVU/MOD/MODU/BEQ/BNE/BLT/BGE/BLTU/BGEU</text>
+  <text x="55" y="632" font-size="10" fill="#475569">RAM: r(N/B/BU/H/HU/W) w(N/B/H/W)</text>
+
+</svg>
+
+<p class="tip">
+  <strong>使用：</strong>浏览器打开 → 右键另存为图片 / Ctrl+P打印PDF → 用于任务(2)提交。<br>
+  本图严格基于 cpu_core.v 的模块例化与 assign 连线绘制，涵盖全部控制信号、多路选择器、及完整的 IF→ID→EX→MEM→WB 五阶段数据流。
+</p>
+
+</body>
+</html>
