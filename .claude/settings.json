@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git pull *)",
+      "Bash(python -c \"import openpyxl; print\\('ok'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash('/c/Program Files/Python312/python.exe' -c ' *)",
+      "Bash(\"/c/Program Files/Python312/python.exe\" fill_excel.py)"
+    ]
+  }
+}
