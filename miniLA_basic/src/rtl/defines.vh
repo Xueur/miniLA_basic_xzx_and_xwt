@@ -33,6 +33,13 @@
 `define ALU_BGE     5'h0E
 `define ALU_BLTU    5'h0F
 `define ALU_BGEU    5'h10
+`define ALU_MUL     5'h11
+`define ALU_MULH    5'h12
+`define ALU_MULHU   5'h13
+`define ALU_DIV     5'h14
+`define ALU_DIVU    5'h15
+`define ALU_MOD     5'h16
+`define ALU_MODU    5'h17
 
 `define RAM_EXT_N   3'b000
 `define RAM_EXT_W   3'b001
