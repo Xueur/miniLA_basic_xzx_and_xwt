@@ -24,6 +24,14 @@ module ALU (
     reg  [ 4:0] op_r;
 
     // ================================================================
+    // 64-bit 乘积累 (用于 mulh.w / mulh.wu)
+    // ================================================================
+    wire [63:0] mul_signed_64;
+    wire [63:0] mul_unsigned_64;
+    assign mul_signed_64   = { {32{a[31]}}, a } * { {32{b[31]}}, b };
+    assign mul_unsigned_64 = {32'b0, a} * {32'b0, b};
+
+    // ================================================================
     // 运算结果 c (组合逻辑)
     // ================================================================
     always @(*) begin
@@ -38,6 +46,13 @@ module ALU (
             `ALU_SRA  : c = $signed(a) >>> b[4:0]; // 算术右移
             `ALU_SLT  : c = ($signed(a) < $signed(b)) ? 32'h1 : 32'h0;
             `ALU_SLTU : c = (a < b) ? 32'h1 : 32'h0;
+            `ALU_MUL  : c = a * b;
+            `ALU_MULH : c = mul_signed_64[63:32];
+            `ALU_MULHU: c = mul_unsigned_64[63:32];
+            `ALU_DIV  : c = (b == 32'h0) ? $signed(32'h0) : $signed(a) / $signed(b);
+            `ALU_DIVU : c = (b == 32'h0) ? 32'h0 : a / b;
+            `ALU_MOD  : c = (b == 32'h0) ? $signed(32'h0) : $signed(a) % $signed(b);
+            `ALU_MODU : c = (b == 32'h0) ? 32'h0 : a % b;
             default   : c = 32'h0;
         endcase
     end

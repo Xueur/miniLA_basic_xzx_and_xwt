@@ -75,14 +75,49 @@ module Controller (
     wire BL        = (inst_31_15[31:26] == 6'h15    );
 
     // ================================================================
+    // B组 — 比较运算 (3R型 + 2RI12型)
+    // ================================================================
+    wire SLT       = (inst_31_15[31:15] == 17'h00024);
+    wire SLTU      = (inst_31_15[31:15] == 17'h00025);
+    wire SLTI      = (inst_31_15[31:22] == 10'h008  );
+    wire SLTUI     = (inst_31_15[31:22] == 10'h009  );
+
+    // ================================================================
+    // B组 — 逻辑运算 (3R型 + 2RI12型)
+    // ================================================================
+    wire AND_      = (inst_31_15[31:15] == 17'h00029);
+    wire OR_       = (inst_31_15[31:15] == 17'h0002A);
+    wire ANDI      = (inst_31_15[31:22] == 10'h00D  );
+
+    // ================================================================
+    // B组 — 条件分支 (2RI16型)
+    // ================================================================
+    wire BLT       = (inst_31_15[31:26] == 6'h18    );
+    wire BGE       = (inst_31_15[31:26] == 6'h19    );
+    wire BLTU      = (inst_31_15[31:26] == 6'h1A    );
+    wire BGEU      = (inst_31_15[31:26] == 6'h1B    );
+
+    // ================================================================
+    // B组 — 乘除法运算 (3R型)
+    // ================================================================
+    wire MUL_W     = (inst_31_15[31:15] == 17'h00038);
+    wire MULH_W    = (inst_31_15[31:15] == 17'h00039);
+    wire MULH_WU   = (inst_31_15[31:15] == 17'h0003A);
+    wire DIV_W     = (inst_31_15[31:15] == 17'h00040);
+    wire MOD_W     = (inst_31_15[31:15] == 17'h00041);
+    wire DIV_WU    = (inst_31_15[31:15] == 17'h00042);
+    wire MOD_WU    = (inst_31_15[31:15] == 17'h00043);
+
+    // ================================================================
     // 指令分组 (方便写控制信号)
     // ================================================================
-    wire IS_3R     = SLL_W | SRL_W | SRA_W | ADD_W | SUB_W | XOR_;
+    wire IS_3R     = SLL_W | SRL_W | SRA_W | ADD_W | SUB_W | XOR_ | AND_ | OR_ | SLT | SLTU
+                    | MUL_W | MULH_W | MULH_WU | DIV_W | MOD_W | DIV_WU | MOD_WU;
     wire IS_2RI5   = SRLI_W | SRAI_W;
     wire IS_LOAD   = LD_W | LD_B | LD_BU | LD_H | LD_HU;
     wire IS_STORE  = ST_B | ST_H | ST_W;
     wire IS_LDST   = IS_LOAD | IS_STORE;
-    wire IS_BRCH   = BEQ | BNE;
+    wire IS_BRCH   = BEQ | BNE | BLT | BGE | BLTU | BGEU;
     wire IS_JUMP   = B | BL;
 
     // ================================================================
@@ -97,8 +132,8 @@ module Controller (
     // ext_op
     // ================================================================
     wire EXT_OP_5   = SLLI_W | SRLI_W | SRAI_W;
-    wire EXT_OP_12U = ORI | XORI;
-    wire EXT_OP_12  = ADDI_W | IS_LOAD | IS_STORE;
+    wire EXT_OP_12U = ORI | XORI | ANDI;
+    wire EXT_OP_12  = ADDI_W | IS_LOAD | IS_STORE | SLTI | SLTUI;
     wire EXT_OP_16  = IS_BRCH | JIRL;
     wire EXT_OP_20  = LU12I_W | PCADDU12I;
     wire EXT_OP_26  = IS_JUMP;
@@ -108,21 +143,28 @@ module Controller (
     // ================================================================
     wire ALU_OP_ADD  = ADDI_W | IS_LOAD | IS_STORE | ADD_W | PCADDU12I | JIRL | BL;
     wire ALU_OP_SUB  = SUB_W;
-    wire ALU_OP_OR   = ORI;
+    wire ALU_OP_OR   = ORI | OR_;
     wire ALU_OP_XOR  = XOR_ | XORI;
     wire ALU_OP_SLL  = SLLI_W | SLL_W;
     wire ALU_OP_SRL  = SRL_W | SRLI_W;
     wire ALU_OP_SRA  = SRA_W | SRAI_W;
     wire ALU_OP_EQ   = BEQ;
     wire ALU_OP_NE   = BNE;
-    // B组预留 (暂时为0)
-    wire ALU_OP_AND  = 1'b0;
-    wire ALU_OP_SLT  = 1'b0;
-    wire ALU_OP_SLTU = 1'b0;
-    wire ALU_OP_BLT  = 1'b0;
-    wire ALU_OP_BGE  = 1'b0;
-    wire ALU_OP_BLTU = 1'b0;
-    wire ALU_OP_BGEU = 1'b0;
+    // B组
+    wire ALU_OP_AND  = AND_ | ANDI;
+    wire ALU_OP_SLT  = SLT | SLTI;
+    wire ALU_OP_SLTU = SLTU | SLTUI;
+    wire ALU_OP_BLT  = BLT;
+    wire ALU_OP_BGE  = BGE;
+    wire ALU_OP_BLTU = BLTU;
+    wire ALU_OP_BGEU = BGEU;
+    wire ALU_OP_MUL  = MUL_W;
+    wire ALU_OP_MULH = MULH_W;
+    wire ALU_OP_MULHU = MULH_WU;
+    wire ALU_OP_DIV  = DIV_W | MOD_W;
+    wire ALU_OP_DIVU = DIV_WU | MOD_WU;
+    wire ALU_OP_MOD  = MOD_W;
+    wire ALU_OP_MODU = MOD_WU;
 
     // ================================================================
     // r2_sel: 1=inst[14:10](rk), 0=inst[4:0](rd)
@@ -132,13 +174,14 @@ module Controller (
     // ================================================================
     // alua_sel: 0=PC.pc, 1=RF.rD1
     // ================================================================
-    wire ALU_A_SEL_PC = PCADDU12I | JIRL | BL;
+    wire ALU_A_SEL_PC = PCADDU12I | BL;
 
     // ================================================================
     // alub_sel: 0=EXT.ext, 1=RF.rD2
     // ================================================================
     wire ALU_B_SEL_EXT = SLLI_W | SRLI_W | SRAI_W | ADDI_W | ORI | XORI
-                       | IS_LOAD | IS_STORE | PCADDU12I | JIRL;
+                       | IS_LOAD | IS_STORE | PCADDU12I | JIRL
+                       | ANDI | SLTI | SLTUI;
 
     // ================================================================
     // ram_r_op
@@ -162,7 +205,8 @@ module Controller (
     wire RF_OP_WE = LU12I_W | ADDI_W | SLLI_W | LD_W | ORI
                   | IS_3R | IS_2RI5 | PCADDU12I | XORI
                   | LD_B | LD_BU | LD_H | LD_HU
-                  | JIRL | BL;
+                  | JIRL | BL
+                  | ANDI | SLTI | SLTUI;
 
     // ================================================================
     // wr_sel: 1=rd, 0=$ra(5'h1)
@@ -172,11 +216,12 @@ module Controller (
     // ================================================================
     // rf_wsel: 写回数据源
     // ================================================================
-    wire WB_OP_PC4 = 1'b0;
+    wire WB_OP_PC4 = JIRL | BL;
     wire WB_OP_RAM = IS_LOAD;
     wire WB_OP_EXT = LU12I_W;
     wire WB_OP_ALU = ADDI_W | SLLI_W | ORI | IS_3R | IS_2RI5
-                   | PCADDU12I | XORI | JIRL | BL;
+                   | PCADDU12I | XORI
+                   | ANDI | SLTI | SLTUI;
 
     // ================================================================
     // 输出编码
@@ -214,7 +259,14 @@ module Controller (
                     {5{ALU_OP_BLT  }} & `ALU_BLT   |
                     {5{ALU_OP_BGE  }} & `ALU_BGE   |
                     {5{ALU_OP_BLTU }} & `ALU_BLTU  |
-                    {5{ALU_OP_BGEU }} & `ALU_BGEU;
+                    {5{ALU_OP_BGEU }} & `ALU_BGEU |
+                    {5{ALU_OP_MUL  }} & `ALU_MUL  |
+                    {5{ALU_OP_MULH }} & `ALU_MULH |
+                    {5{ALU_OP_MULHU}} & `ALU_MULHU |
+                    {5{ALU_OP_DIV  }} & `ALU_DIV  |
+                    {5{ALU_OP_DIVU }} & `ALU_DIVU |
+                    {5{ALU_OP_MOD  }} & `ALU_MOD  |
+                    {5{ALU_OP_MODU }} & `ALU_MODU;
 
     assign is_mul = 1'b0;
     assign is_div = 1'b0;

@@ -28,20 +28,16 @@ module MREQ (
 
         case (ram_wop)
             `RAM_WE_B: begin
-                // st.b: 根据字节偏移写入1字节
+                // st.b: offset=0透传(匹配参考), offset≠0字节复制到所有lane
                 case (offset)
-                    2'b00: begin da_wen = 4'b0001; da_wdata = {24'h0, ram_wdata[7:0]}; end
-                    2'b01: begin da_wen = 4'b0010; da_wdata = {16'h0, ram_wdata[7:0], 8'h0}; end
-                    2'b10: begin da_wen = 4'b0100; da_wdata = {8'h0, ram_wdata[7:0], 16'h0}; end
-                    2'b11: begin da_wen = 4'b1000; da_wdata = {ram_wdata[7:0], 24'h0}; end
+                    2'b00: begin da_wen = 4'b0001; da_wdata = ram_wdata; end
+                    default: begin da_wen = 4'b0001 << offset; da_wdata = {4{ram_wdata[7:0]}}; end
                 endcase
             end
             `RAM_WE_H: begin
-                // st.h: 根据半字偏移写入2字节 (offset[1]对齐)
-                case (offset[1])
-                    1'b0: begin da_wen = 4'b0011; da_wdata = {16'h0, ram_wdata[15:0]}; end
-                    1'b1: begin da_wen = 4'b1100; da_wdata = {ram_wdata[15:0], 16'h0}; end
-                endcase
+                // st.h: 半字复制到高低半字, da_wen控制写哪个
+                da_wen = offset[1] ? 4'b1100 : 4'b0011;
+                da_wdata = {2{ram_wdata[15:0]}};
             end
             `RAM_WE_W: begin
                 // st.w: 写入4字节 (需字对齐)
