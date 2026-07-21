@@ -41,10 +41,11 @@ module cpu_core(
     wire [ 2:0] ram_rop;
     reg  [ 2:0] ram_rop_r;
     wire [ 3:0] ram_wop;
-    wire        is_mul;
-    wire        is_div;
-    wire        is_mul_div;
     reg         mul_div_flag;       // 乘除法运算的标志位信号
+
+    // 从 alu_op 推导: 乘除法指令需要多周期，不需要 Controller 单独输出
+    wire is_mul_div = (alu_op == `ALU_MUL ) | (alu_op == `ALU_MULH) | (alu_op == `ALU_MULHU)
+                    | (alu_op == `ALU_DIV ) | (alu_op == `ALU_MOD ) | (alu_op == `ALU_DIVU) | (alu_op == `ALU_MODU);
 
     // Register File
     wire [31:0] rf_rd1;
@@ -120,8 +121,6 @@ module cpu_core(
         .alua_sel       (alua_sel),
         .alub_sel       (alub_sel),
         .alu_op         (alu_op),
-        .is_mul         (is_mul),
-        .is_div         (is_div),
         .ram_r_op       (ram_rop),
         .ram_w_op       (ram_wop),
         .rf_we          (rf_we),
@@ -155,7 +154,6 @@ module cpu_core(
     end
 
     // 遇到乘除法指令时，拉高mul_div_flag标志位，表示正在执行乘除法指令
-    assign is_mul_div = is_mul | is_div;
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if      (cpu_rst)       mul_div_flag <= 1'b0;
         else if (is_mul_div)    mul_div_flag <= 1'b1;

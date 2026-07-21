@@ -10,8 +10,6 @@ module Controller (
     output wire         alua_sel,
     output wire         alub_sel,
     output wire [ 4: 0] alu_op,
-    output wire         is_mul,
-    output wire         is_div,
     output wire [ 2: 0] ram_r_op,
     output wire [ 3: 0] ram_w_op,
     output wire         rf_we,
@@ -267,9 +265,6 @@ module Controller (
                     {5{ALU_OP_DIVU }} & `ALU_DIVU |
                     {5{ALU_OP_MOD  }} & `ALU_MOD  |
                     {5{ALU_OP_MODU }} & `ALU_MODU;
-
-    assign is_mul = 1'b0;
-    assign is_div = 1'b0;
 
     assign ram_r_op = {3{RAM_EXT_B }} & `RAM_EXT_B  |
                       {3{RAM_EXT_BU}} & `RAM_EXT_BU |

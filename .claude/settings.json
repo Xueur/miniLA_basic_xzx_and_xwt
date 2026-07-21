@@ -5,7 +5,12 @@
       "Bash(python -c \"import openpyxl; print\\('ok'\\)\")",
       "Bash(python -c ' *)",
       "Bash('/c/Program Files/Python312/python.exe' -c ' *)",
-      "Bash(\"/c/Program Files/Python312/python.exe\" fill_excel.py)"
+      "Bash(\"/c/Program Files/Python312/python.exe\" fill_excel.py)",
+      "Bash(where python *)",
+      "Bash(where python3 *)",
+      "Read(//c/Windows//**)",
+      "Bash('/c/Program Files/Python312/python.exe' *)",
+      "Bash(\"/c/Program Files/Python312/python.exe\" \"d:/Vivado/miniLA_basic_xzx_and_xwt/_build_excel.py\")"
     ]
   }
 }
