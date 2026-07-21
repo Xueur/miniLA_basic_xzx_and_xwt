@@ -10,7 +10,11 @@
       "Bash(where python3 *)",
       "Read(//c/Windows//**)",
       "Bash('/c/Program Files/Python312/python.exe' *)",
-      "Bash(\"/c/Program Files/Python312/python.exe\" \"d:/Vivado/miniLA_basic_xzx_and_xwt/_build_excel.py\")"
+      "Bash(\"/c/Program Files/Python312/python.exe\" \"d:/Vivado/miniLA_basic_xzx_and_xwt/_build_excel.py\")",
+      "Bash(find /d/Vivado/miniRV_axi_stu -type f -name \"*.v\" -o -name \"*.sv\" -o -name \"*.vh\" -o -name \"*.tcl\" -o -name \"*.xdc\" -o -name \"*.h\" -o -name \"*.c\" -o -name \"Makefile\" -o -name \"*.txt\" -o -name \"*.md\" | sort)",
+      "Read(//d/Vivado/miniRV_axi_stu/**)",
+      "Read(//d/Vivado/miniRV_axi_stu/miniRV_axi.srcs/sources_1/new/**)",
+      "Bash(ls -R \"D:/Vivado/miniRV_axi_stu\" --group-directories-first 2>/dev/null | head -80)"
     ]
   }
 }
