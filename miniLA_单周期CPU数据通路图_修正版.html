@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>miniLA CPU 数据通路图 (修正版)</title>
+<style>
+*{margin:0;padding:0}body{background:#fff;padding:16px;font-family:'Microsoft YaHei',sans-serif}
+h1{font-size:18px;margin-bottom:4px;color:#1a1a2e}
+.note{font-size:12px;color:#888;margin-bottom:8px}
+</style></head>
+<body>
+<h1>miniLA 单周期CPU 数据通路图 (修正版 — 基于最新代码)</h1>
+<p class="note">修正: jirl ALU.A=RF.rD1 | jirl/bl rf_wsel=PC4 | sltui ext_op=EXT_12 | 补全B组指令</p>
+
+<svg viewBox="0 0 1500 720" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="da" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#1e40af"/></marker>
+  <marker id="dc" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#dc2626"/></marker>
+  <marker id="dg" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#059669"/></marker>
+  <marker id="dp" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/></marker>
+</defs>
+
+<rect x="8" y="8" width="1484" height="704" fill="none" stroke="#e2e8f0" stroke-width="1" rx="8"/>
+
+<!-- ===== 阶段 ===== -->
+<text x="80" y="36" font-size="13" fill="#64748b" font-weight="bold">IF</text>
+<text x="230" y="36" font-size="13" fill="#64748b" font-weight="bold">IF</text>
+<text x="430" y="36" font-size="13" fill="#64748b" font-weight="bold">ID</text>
+<text x="620" y="36" font-size="13" fill="#64748b" font-weight="bold">ID</text>
+<text x="820" y="36" font-size="13" fill="#64748b" font-weight="bold">EX</text>
+<text x="1060" y="36" font-size="13" fill="#64748b" font-weight="bold">MEM</text>
+<text x="1280" y="36" font-size="13" fill="#64748b" font-weight="bold">WB</text>
+
+<!-- ===== 图例 ===== -->
+<rect x="20" y="45" width="600" height="18" rx="3" fill="#f8fafc"/>
+<text x="32" y="58" font-size="10" fill="#1e40af">━ 数据线</text>
+<text x="130" y="58" font-size="10" fill="#dc2626">┅ 控制信号</text>
+<text x="240" y="58" font-size="10" fill="#059669">━ 地址线</text>
+<text x="350" y="58" font-size="10" fill="#7c3aed">━ 指令字段</text>
+<text x="470" y="58" font-size="10" fill="#334155">▭ 组合逻辑 □</text>
+<text x="580" y="58" font-size="10" fill="#334155">▦ 时序逻辑 ▣</text>
+
+<!-- ================================================================ -->
+<!-- 模块 -->
+<!-- ================================================================ -->
+
+<!-- PC (时序) -->
+<rect x="20" y="75" width="110" height="85" rx="5" fill="#eff6ff" stroke="#1e40af" stroke-width="2.5"/>
+<text x="75" y="98" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">PC</text>
+<line x1="32" y1="104" x2="118" y2="104" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="28" y="118" font-size="9" fill="#334155">clk rst fetch</text>
+<text x="28" y="134" font-size="9" fill="#1e3a8a">← npc</text>
+<text x="82" y="118" font-size="9" fill="#1e3a8a">pc →</text>
+<text x="82" y="134" font-size="9" fill="#1e3a8a">if_req →</text>
+<text x="82" y="150" font-size="8" fill="#94a3b8">时序 ▣</text>
+
+<!-- Inst_ROM (时序, 虚线) -->
+<rect x="175" y="75" width="140" height="85" rx="5" fill="#fafafa" stroke="#1e40af" stroke-width="2" stroke-dasharray="8,4"/>
+<text x="245" y="98" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Inst_ROM</text>
+<line x1="188" y1="104" x2="302" y2="104" stroke="#cbd5e1" stroke-width="0.5" stroke-dasharray="4,2"/>
+<text x="182" y="118" font-size="9" fill="#334155">← addr</text>
+<text x="182" y="134" font-size="9" fill="#334155">if_valid</text>
+<text x="260" y="118" font-size="9" fill="#1e3a8a">inst →</text>
+<text x="260" y="150" font-size="8" fill="#94a3b8">时序 ▣</text>
+
+<!-- Controller (组合) -->
+<rect x="360" y="75" width="175" height="85" rx="5" fill="#fef9e7" stroke="#d97706" stroke-width="2.5"/>
+<text x="447" y="98" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Controller</text>
+<line x1="372" y1="104" x2="523" y2="104" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="368" y="118" font-size="9" fill="#334155">← inst[31:15]</text>
+<text x="368" y="134" font-size="9" fill="#dc2626">npc_op ext_op alu_op →</text>
+<text x="368" y="148" font-size="9" fill="#dc2626">alua_sel alub_sel r2_sel →</text>
+<text x="368" y="158" font-size="8" fill="#94a3b8">组合 □</text>
+
+<!-- RF (时序) -->
+<rect x="580" y="75" width="130" height="85" rx="5" fill="#eff6ff" stroke="#1e40af" stroke-width="2.5"/>
+<text x="645" y="98" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">RF (32×32)</text>
+<line x1="592" y1="104" x2="698" y2="104" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="588" y="118" font-size="9" fill="#334155">← rR1 rR2 we</text>
+<text x="588" y="134" font-size="9" fill="#334155">← wR wD clk</text>
+<text x="658" y="118" font-size="9" fill="#1e3a8a">rD1 →</text>
+<text x="658" y="134" font-size="9" fill="#1e3a8a">rD2 →</text>
+<text x="658" y="150" font-size="8" fill="#94a3b8">时序 ▣</text>
+
+<!-- EXT (组合) -->
+<rect x="755" y="75" width="120" height="85" rx="5" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="815" y="98" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">EXT</text>
+<line x1="768" y1="104" x2="862" y2="104" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="762" y="118" font-size="9" fill="#334155">← imm[25:0]</text>
+<text x="762" y="134" font-size="9" fill="#334155">← op[2:0]</text>
+<text x="835" y="118" font-size="9" fill="#1e3a8a">ext →</text>
+<text x="835" y="150" font-size="8" fill="#94a3b8">组合 □</text>
+
+<!-- ALU (组合) -->
+<rect x="920" y="75" width="170" height="85" rx="5" fill="#eff6ff" stroke="#1e40af" stroke-width="2.5"/>
+<text x="1005" y="98" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">ALU (+mul/div)</text>
+<line x1="932" y1="104" x2="1078" y2="104" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="928" y="118" font-size="9" fill="#334155">← a b op[4:0]</text>
+<text x="928" y="134" font-size="9" fill="#1e3a8a">c →</text>
+<text x="928" y="148" font-size="9" fill="#1e3a8a">br →</text>
+<text x="1035" y="158" font-size="8" fill="#94a3b8">组合 □</text>
+
+<!-- MREQ (组合) -->
+<rect x="1135" y="75" width="115" height="85" rx="5" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="1192" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">MREQ</text>
+<line x1="1148" y1="104" x2="1237" y2="104" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="1142" y="118" font-size="9" fill="#334155">← addr wdata</text>
+<text x="1142" y="134" font-size="9" fill="#334155">← rop wop</text>
+<text x="1210" y="118" font-size="9" fill="#1e3a8a">ren wen →</text>
+<text x="1210" y="134" font-size="9" fill="#1e3a8a">addr wdata→</text>
+
+<!-- MEXT (组合) -->
+<rect x="1295" y="75" width="110" height="85" rx="5" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="1350" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">MEXT</text>
+<line x1="1308" y1="104" x2="1392" y2="104" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="1302" y="118" font-size="9" fill="#334155">← din op offs</text>
+<text x="1365" y="118" font-size="9" fill="#1e3a8a">ext →</text>
+
+<!-- Data_RAM (时序, 虚线) -->
+<rect x="1135" y="210" width="140" height="70" rx="5" fill="#fafafa" stroke="#1e40af" stroke-width="2" stroke-dasharray="8,4"/>
+<text x="1205" y="234" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Data_RAM</text>
+<line x1="1148" y1="240" x2="1262" y2="240" stroke="#cbd5e1" stroke-width="0.5" stroke-dasharray="4,2"/>
+<text x="1142" y="254" font-size="9" fill="#334155">← addr wdata</text>
+<text x="1142" y="268" font-size="9" fill="#334155">← ren wen</text>
+<text x="1240" y="254" font-size="9" fill="#1e3a8a">rdata →</text>
+
+<!-- NPC (组合) -->
+<rect x="20" y="210" width="110" height="85" rx="5" fill="#eff6ff" stroke="#1e40af" stroke-width="2"/>
+<text x="75" y="234" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">NPC</text>
+<line x1="32" y1="240" x2="118" y2="240" stroke="#cbd5e1" stroke-width="0.8"/>
+<text x="28" y="254" font-size="9" fill="#334155">← pc offset</text>
+<text x="28" y="270" font-size="9" fill="#334155">← br op[1:0]</text>
+<text x="82" y="254" font-size="9" fill="#1e3a8a">npc →</text>
+<text x="82" y="270" font-size="9" fill="#1e3a8a">pc4 →</text>
+
+<!-- WB-MUX 菱形 -->
+<polygon points="580,330 600,352 580,374 560,352" fill="#fff" stroke="#d97706" stroke-width="2.5"/>
+<text x="583" y="348" font-size="9" fill="#92400e">MUX</text>
+<text x="583" y="364" font-size="7" fill="#92400e">rf_wsel</text>
+
+<!-- ALU-A MUX 菱形 -->
+<polygon points="905,205 918,220 905,235 892,220" fill="#fff" stroke="#d97706" stroke-width="2"/>
+
+<!-- ALU-B MUX 菱形 -->
+<polygon points="905,275 918,290 905,305 892,290" fill="#fff" stroke="#d97706" stroke-width="2"/>
+
+<!-- ================================================================ -->
+<!-- 数据流连线 -->
+<!-- ================================================================ -->
+
+<!-- PC.pc → Inst_ROM -->
+<line x1="130" y1="110" x2="170" y2="110" stroke="#059669" stroke-width="2.5" marker-end="url(#dg)"/>
+<text x="142" y="102" font-size="9" fill="#059669">pc</text>
+
+<!-- Inst_ROM.inst → inst 总线 -->
+<line x1="315" y1="110" x2="355" y2="110" stroke="#1e40af" stroke-width="2.5" marker-end="url(#da)"/>
+
+<!-- inst → RF (紫线) -->
+<path d="M390,110 L390,185 L645,185 L645,175" fill="none" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#dp)"/>
+<text x="500" y="178" font-size="9" fill="#7c3aed">inst[9:5]=rj [14:10]=rk [4:0]=rd</text>
+
+<!-- inst → EXT (紫线) -->
+<path d="M420,110 L420,195 L815,195 L815,175" fill="none" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#dp)"/>
+<text x="610" y="188" font-size="9" fill="#7c3aed">inst[25:0]</text>
+
+<!-- RF.rD1 → ALU-A-MUX -->
+<path d="M710,110 L730,110 L730,220 L887,220" fill="none" stroke="#1e40af" stroke-width="2.5" marker-end="url(#da)"/>
+<text x="800" y="160" font-size="9" fill="#1e40af">32 rD1</text>
+
+<!-- RF.rD2 → ALU-B-MUX -->
+<path d="M710,128 L740,128 L740,290 L887,290" fill="none" stroke="#1e40af" stroke-width="2" marker-end="url(#da)"/>
+<text x="810" y="215" font-size="9" fill="#1e40af">32 rD2</text>
+
+<!-- RF.rD2 → MREQ (store data) -->
+<path d="M740,128 L740,315 L1140,315 L1140,175" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#da)"/>
+<text x="930" y="308" font-size="9" fill="#1e40af">32 (store)</text>
+
+<!-- EXT.ext → ALU-B-MUX -->
+<path d="M875,110 L895,110 L895,290 L887,290" fill="none" stroke="#1e40af" stroke-width="2.5" marker-end="url(#da)"/>
+<text x="882" y="205" font-size="9" fill="#1e40af">32 ext</text>
+
+<!-- EXT.ext → NPC.offset -->
+<path d="M875,125 L890,125 L890,245 L135,245" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#da)"/>
+<text x="490" y="238" font-size="9" fill="#1e40af">32 offset</text>
+
+<!-- EXT.ext → WB-MUX (lu12i.w) -->
+<path d="M875,140 L900,140 L900,400 L575,400 L575,355" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#da)"/>
+<text x="730" y="393" font-size="9" fill="#1e40af">32 (lu12i.w)</text>
+
+<!-- ALU-A-MUX → ALU.a -->
+<path d="M918,220 L935,220 L935,110 L915,110" fill="none" stroke="#1e40af" stroke-width="2" marker-end="url(#da)"/>
+
+<!-- ALU-B-MUX → ALU.b -->
+<path d="M918,290 L945,290 L945,128 L915,128" fill="none" stroke="#1e40af" stroke-width="2" marker-end="url(#da)"/>
+
+<!-- ALU.c → MREQ.addr -->
+<line x1="1090" y1="110" x2="1130" y2="110" stroke="#059669" stroke-width="2.5" marker-end="url(#dg)"/>
+<text x="1102" y="102" font-size="9" fill="#059669">addr</text>
+
+<!-- ALU.c → WB-MUX -->
+<path d="M1005,160 L1005,180 L600,180 L600,325" fill="none" stroke="#1e40af" stroke-width="2.5" marker-end="url(#da)"/>
+<text x="790" y="173" font-size="9" fill="#1e40af">32 c</text>
+
+<!-- ALU.br → NPC -->
+<path d="M1090,132 L1110,132 L1110,265 L135,265" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#da)"/>
+<text x="600" y="258" font-size="9" fill="#1e40af">1 br</text>
+
+<!-- PC.pc → ALU-A-MUX (pcaddu12i/bl) -->
+<path d="M110,160 L110,205 L887,220" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#da)"/>
+<text x="480" y="198" font-size="9" fill="#1e40af">32 pc (pcaddu12i/bl)</text>
+
+<!-- PC.pc → NPC -->
+<line x1="75" y1="160" x2="75" y2="205" stroke="#1e40af" stroke-width="1.5" marker-end="url(#da)"/>
+
+<!-- NPC.npc → PC 左边绕 -->
+<path d="M20,260 L8,260 L8,110 L15,110" fill="none" stroke="#059669" stroke-width="2.5" marker-end="url(#dg)"/>
+<text x="4" y="190" font-size="9" fill="#059669">npc</text>
+
+<!-- NPC.pc4 → WB-MUX -->
+<path d="M130,270 L155,270 L155,440 L565,440 L565,355" fill="none" stroke="#1e40af" stroke-width="2" marker-end="url(#da)"/>
+<text x="350" y="433" font-size="9" fill="#1e40af">32 pc4 (PC+4)</text>
+
+<!-- MREQ → Data_RAM -->
+<path d="M1192,160 L1192,205" fill="none" stroke="#059669" stroke-width="1.5" marker-end="url(#dg)"/>
+<text x="1200" y="188" font-size="9" fill="#059669">addr wen wdata</text>
+
+<!-- Data_RAM.rdata → MEXT.din -->
+<path d="M1275,245 L1300,245 L1300,415 L1350,415 L1350,165" fill="none" stroke="#1e40af" stroke-width="2" marker-end="url(#da)"/>
+<text x="1330" y="300" font-size="9" fill="#1e40af">32 rdata</text>
+
+<!-- MEXT.ext → WB-MUX -->
+<path d="M1405,110 L1430,110 L1430,460 L590,460 L590,355" fill="none" stroke="#1e40af" stroke-width="2" marker-end="url(#da)"/>
+<text x="1440" y="290" font-size="9" fill="#1e40af">32 ext</text>
+
+<!-- WB-MUX → RF.wD -->
+<path d="M600,352 L625,352 L625,40 L645,40 L645,70" fill="none" stroke="#1e40af" stroke-width="2.5" marker-end="url(#da)"/>
+<text x="613" y="200" font-size="9" fill="#1e40af">32 wD</text>
+
+<!-- ================================================================ -->
+<!-- 控制信号 -->
+<!-- ================================================================ -->
+
+<!-- npc_op → NPC -->
+<line x1="360" y1="130" x2="135" y2="130" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3"/>
+<line x1="135" y1="130" x2="135" y2="205" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="200" y="123" font-size="10" fill="#dc2626" font-weight="bold">npc_op[1:0]</text>
+
+<!-- ext_op → EXT -->
+<path d="M535,130 L750,130 L750,134" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="620" y="123" font-size="10" fill="#dc2626" font-weight="bold">ext_op[2:0] (sltui=EXT_12!)</text>
+
+<!-- alu_op → ALU -->
+<path d="M535,142 L915,142 L915,148" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="710" y="135" font-size="10" fill="#dc2626" font-weight="bold">alu_op[4:0]</text>
+
+<!-- alua_sel/alub_sel → MUX -->
+<path d="M535,154 L1050,154 L1050,210" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<path d="M535,158 L1060,158 L1060,285" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="770" y="148" font-size="10" fill="#dc2626">alua_sel (jirl=R1!) / alub_sel</text>
+
+<!-- r2_sel → RF -->
+<path d="M360,142 L590,142 L590,134" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="470" y="136" font-size="10" fill="#dc2626">r2_sel</text>
+
+<!-- ram_r_op → MREQ + MEXT -->
+<path d="M535,170 L1130,170 L1130,134" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<path d="M1130,170 L1290,170 L1290,134" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="1200" y="163" font-size="10" fill="#dc2626" font-weight="bold">ram_r_op[2:0]</text>
+
+<!-- ram_w_op → MREQ -->
+<path d="M360,154 L1125,154 L1125,175" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="730" y="148" font-size="10" fill="#dc2626" font-weight="bold">ram_w_op[3:0]</text>
+
+<!-- rf_we → RF -->
+<path d="M360,166 L330,166 L330,200 L610,200 L610,175" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="460" y="193" font-size="10" fill="#dc2626">rf_we</text>
+
+<!-- wr_sel → RF -->
+<path d="M360,175 L310,175 L310,210 L620,210 L620,175" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="455" y="203" font-size="10" fill="#dc2626">wr_sel</text>
+
+<!-- rf_wsel → WB-MUX -->
+<path d="M535,182 L570,182 L570,325" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#dc)"/>
+<text x="540" y="260" font-size="10" fill="#dc2626" font-weight="bold">rf_wsel[1:0] (jirl/bl=PC4!)</text>
+
+<!-- ================================================================ -->
+<!-- 底部: 控制信号全集表 -->
+<!-- ================================================================ -->
+<line x1="15" y1="490" x2="1485" y2="490" stroke="#e2e8f0" stroke-width="1"/>
+
+<text x="20" y="515" font-size="14" font-weight="bold" fill="#1a1a2e">控制信号全集 (A组已实现 + B组新增, 基于最新代码)</text>
+
+<rect x="20" y="525" width="1460" height="22" rx="3" fill="#1e3a5f"/>
+<text x="32" y="541" font-size="10" fill="#fff" font-weight="bold">信号[位]</text>
+<text x="130" y="541" font-size="10" fill="#fff" font-weight="bold">addi.w</text>
+<text x="210" y="541" font-size="10" fill="#fff" font-weight="bold">ld.w</text>
+<text x="285" y="541" font-size="10" fill="#fff" font-weight="bold">st.w</text>
+<text x="360" y="541" font-size="10" fill="#fff" font-weight="bold">beq</text>
+<text x="435" y="541" font-size="10" fill="#fff" font-weight="bold">jirl</text>
+<text x="520" y="541" font-size="10" fill="#fff" font-weight="bold">bl</text>
+<text x="590" y="541" font-size="10" fill="#fff" font-weight="bold">b</text>
+<text x="650" y="541" font-size="10" fill="#fff" font-weight="bold">lu12i.w</text>
+<text x="740" y="541" font-size="10" fill="#fff" font-weight="bold">pcaddu12i</text>
+<text x="835" y="541" font-size="10" fill="#fff" font-weight="bold">slt/sltu</text>
+<text x="920" y="541" font-size="10" fill="#fff" font-weight="bold">slti</text>
+<text x="990" y="541" font-size="10" fill="#fff" font-weight="bold">sltui</text>
+<text x="1070" y="541" font-size="10" fill="#fff" font-weight="bold">and/or/xor</text>
+<text x="1170" y="541" font-size="10" fill="#fff" font-weight="bold">andi/ori/xori</text>
+<text x="1290" y="541" font-size="10" fill="#fff" font-weight="bold">blt/bge/bltu/bgeu</text>
+
+<g font-size="10">
+  <rect x="20" y="548" width="1460" height="20" fill="#f1f5f9"/>
+  <text x="32" y="562" fill="#1e40af" font-weight="bold">npc_op[2]</text>
+  <text x="130" y="562" fill="#047857">PC4</text><text x="210" y="562" fill="#047857">PC4</text><text x="285" y="562" fill="#047857">PC4</text><text x="360" y="562" fill="#047857">BRCH</text><text x="435" y="562" fill="#047857">JR</text><text x="520" y="562" fill="#047857">JMP</text><text x="590" y="562" fill="#047857">JMP</text><text x="650" y="562" fill="#047857">PC4</text><text x="740" y="562" fill="#047857">PC4</text><text x="835" y="562" fill="#047857">PC4</text><text x="920" y="562" fill="#047857">PC4</text><text x="990" y="562" fill="#047857">PC4</text><text x="1070" y="562" fill="#047857">PC4</text><text x="1170" y="562" fill="#047857">PC4</text><text x="1290" y="562" fill="#047857">BRCH</text>
+
+  <rect x="20" y="569" width="1460" height="20" fill="#fff"/>
+  <text x="32" y="583" fill="#1e40af" font-weight="bold">ext_op[3]</text>
+  <text x="130" y="583" fill="#047857">12</text><text x="210" y="583" fill="#047857">12</text><text x="285" y="583" fill="#047857">12</text><text x="360" y="583" fill="#047857">16</text><text x="435" y="583" fill="#047857">16</text><text x="520" y="583" fill="#047857">26</text><text x="590" y="583" fill="#047857">26</text><text x="650" y="583" fill="#047857">20</text><text x="740" y="583" fill="#047857">20</text><text x="835" y="583" fill="#047857">—</text><text x="920" y="583" fill="#047857">12</text><text x="990" y="583" fill="#dc2626" font-weight="bold">12</text><text x="1070" y="583" fill="#047857">—</text><text x="1170" y="583" fill="#047857">12U</text><text x="1290" y="583" fill="#047857">16</text>
+
+  <rect x="20" y="590" width="1460" height="20" fill="#f1f5f9"/>
+  <text x="32" y="604" fill="#1e40af" font-weight="bold">alua_sel[1]</text>
+  <text x="130" y="604" fill="#047857">R1</text><text x="210" y="604" fill="#047857">R1</text><text x="285" y="604" fill="#047857">R1</text><text x="360" y="604" fill="#047857">R1</text><text x="435" y="604" fill="#dc2626" font-weight="bold">R1</text><text x="520" y="604" fill="#047857">PC</text><text x="590" y="604" fill="#047857">—</text><text x="650" y="604" fill="#047857">—</text><text x="740" y="604" fill="#047857">PC</text><text x="835" y="604" fill="#047857">R1</text><text x="920" y="604" fill="#047857">R1</text><text x="990" y="604" fill="#047857">R1</text><text x="1070" y="604" fill="#047857">R1</text><text x="1170" y="604" fill="#047857">R1</text><text x="1290" y="604" fill="#047857">R1</text>
+
+  <rect x="20" y="611" width="1460" height="20" fill="#fff"/>
+  <text x="32" y="625" fill="#1e40af" font-weight="bold">alub_sel[1]</text>
+  <text x="130" y="625" fill="#047857">EXT</text><text x="210" y="625" fill="#047857">EXT</text><text x="285" y="625" fill="#047857">EXT</text><text x="360" y="625" fill="#047857">R2</text><text x="435" y="625" fill="#047857">EXT</text><text x="520" y="625" fill="#047857">—</text><text x="590" y="625" fill="#047857">—</text><text x="650" y="625" fill="#047857">—</text><text x="740" y="625" fill="#047857">EXT</text><text x="835" y="625" fill="#047857">R2</text><text x="920" y="625" fill="#047857">EXT</text><text x="990" y="625" fill="#047857">EXT</text><text x="1070" y="625" fill="#047857">R2</text><text x="1170" y="625" fill="#047857">EXT</text><text x="1290" y="625" fill="#047857">R2</text>
+
+  <rect x="20" y="632" width="1460" height="20" fill="#f1f5f9"/>
+  <text x="32" y="646" fill="#1e40af" font-weight="bold">alu_op[5]</text>
+  <text x="130" y="646" fill="#047857">ADD</text><text x="210" y="646" fill="#047857">ADD</text><text x="285" y="646" fill="#047857">ADD</text><text x="360" y="646" fill="#047857">BEQ</text><text x="435" y="646" fill="#047857">ADD</text><text x="520" y="646" fill="#047857">ADD</text><text x="590" y="646" fill="#047857">—</text><text x="650" y="646" fill="#047857">—</text><text x="740" y="646" fill="#047857">ADD</text><text x="835" y="646" fill="#047857">SLT/SLTU</text><text x="920" y="646" fill="#047857">SLT</text><text x="990" y="646" fill="#047857">SLTU</text><text x="1070" y="646" fill="#047857">AND/OR/XOR</text><text x="1170" y="646" fill="#047857">AND/OR/XOR</text><text x="1290" y="646" fill="#047857">BLT/BGE/BLTU/BGEU</text>
+
+  <rect x="20" y="653" width="1460" height="20" fill="#fff"/>
+  <text x="32" y="667" fill="#1e40af" font-weight="bold">rf_we[1]</text>
+  <text x="130" y="667" fill="#047857">1</text><text x="210" y="667" fill="#047857">1</text><text x="285" y="667" fill="#047857">0</text><text x="360" y="667" fill="#047857">0</text><text x="435" y="667" fill="#047857">1</text><text x="520" y="667" fill="#047857">1</text><text x="590" y="667" fill="#047857">0</text><text x="650" y="667" fill="#047857">1</text><text x="740" y="667" fill="#047857">1</text><text x="835" y="667" fill="#047857">1</text><text x="920" y="667" fill="#047857">1</text><text x="990" y="667" fill="#047857">1</text><text x="1070" y="667" fill="#047857">1</text><text x="1170" y="667" fill="#047857">1</text><text x="1290" y="667" fill="#047857">0</text>
+
+  <rect x="20" y="674" width="1460" height="20" fill="#f1f5f9"/>
+  <text x="32" y="688" fill="#1e40af" font-weight="bold">rf_wsel[2]</text>
+  <text x="130" y="688" fill="#047857">ALU</text><text x="210" y="688" fill="#047857">RAM</text><text x="285" y="688" fill="#047857">—</text><text x="360" y="688" fill="#047857">—</text><text x="435" y="688" fill="#dc2626" font-weight="bold">PC4</text><text x="520" y="688" fill="#dc2626" font-weight="bold">PC4</text><text x="590" y="688" fill="#047857">—</text><text x="650" y="688" fill="#047857">EXT</text><text x="740" y="688" fill="#047857">ALU</text><text x="835" y="688" fill="#047857">ALU</text><text x="920" y="688" fill="#047857">ALU</text><text x="990" y="688" fill="#047857">ALU</text><text x="1070" y="688" fill="#047857">ALU</text><text x="1170" y="688" fill="#047857">ALU</text><text x="1290" y="688" fill="#047857">—</text>
+</g>
+
+<text x="20" y="710" font-size="10" fill="#dc2626">红色标注 = 与原图不同之处 (修正后) | sltui 的 ext_op 改为 EXT_12(符号扩展) | jirl alua_sel=R1(非PC) rf_wsel=PC4(非ALU) | bl rf_wsel=PC4(非ALU)</text>
+
+</svg>
+</body>
+</html>
