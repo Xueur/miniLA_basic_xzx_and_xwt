@@ -105,7 +105,7 @@ module axi_bus #(
 
     always @(*) begin
         case (r_state)
-            R_IDLE:        if ((dc_rd_cached || dc_has_rd || ic_has_rd) && !w_busy) r_nstate = R_SEND_RREQ; else r_nstate = R_IDLE;
+            R_IDLE:        if ((dc_rd_cached || dc_has_rd || ic_has_rd) && w_state == W_IDLE) r_nstate = R_SEND_RREQ; else r_nstate = R_IDLE;
             R_SEND_RREQ:   r_nstate = m_axi_arready ? R_WAIT_R : R_SEND_RREQ;
             R_WAIT_R:      r_nstate = m_axi_rvalid ? (m_axi_rlast ? R_IDLE : R_PACKAGE) : R_WAIT_R;
             R_PACKAGE:     r_nstate = m_axi_rvalid ? (m_axi_rlast ? R_IDLE : R_PACKAGE) : R_PACKAGE;
@@ -208,12 +208,12 @@ module axi_bus #(
     reg        w_done;       // W handshake completed
     reg        aw_done;      // AW handshake completed
 
-    wire r_busy = (r_state != R_IDLE);
-    wire w_busy = (w_state != W_IDLE);
-
     always @(*) begin
         dc_dev_wrdy = (w_state == W_IDLE) && !dc_rd_cached;
     end
+
+    wire r_busy = (r_state != R_IDLE);
+    wire w_busy = (w_state != W_IDLE);
 
     always @(posedge aclk or posedge areset) begin
         if (areset) w_state <= W_IDLE;

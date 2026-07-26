@@ -123,7 +123,7 @@ module miniLA_SoC(
     );
 
     // Initialize bram_axi — load test binary into BRAM
-    initial begin
+    initial begin : bram_init
         integer fd, i, j;
         reg [31:0] tmp [0:8191];
         fd = $fopen("meminit.bin", "r");
