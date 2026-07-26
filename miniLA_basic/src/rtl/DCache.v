@@ -84,19 +84,31 @@ module DCache(
     wire hit_r = (r_state == R_LOOKUP) && !rd_uncached_r && valid_bit && (rd_addr_r[14:10] == tag_from_cache);
     wire hit_w = (w_state == W_LOOKUP) && !wr_uncached_r && valid_bit && (wr_addr_r[14:10] == tag_from_cache);
 
-    // ---- Read data output ----
-    always @(*) begin
-        data_valid = hit_r || ((r_state == R_REFILL) && dev_rvalid) || ((r_state == R_UC_WAIT) && dev_rvalid);
-        if (r_state == R_REFILL)
-            data_rdata = pick_word(dev_rdata, rd_addr_r[3:2]);
-        else if (r_state == R_UC_WAIT)
-            data_rdata = dev_rdata[31:0];
-        else
-            data_rdata = pick_word(cache_line_r[127:0], offset);
+    // Delay dev_rvalid to avoid race — same fix as ICache
+    reg dev_rvalid_d1;
+    always @(posedge cpu_clk) begin
+        if (cpu_rst) dev_rvalid_d1 <= 1'b0;
+        else         dev_rvalid_d1 <= dev_rvalid;
+    end
+
+    // ---- Read data output (registered, matches Inst_ROM/Data_RAM timing) ----
+    always @(posedge cpu_clk or posedge cpu_rst) begin
+        if (cpu_rst) begin
+            data_valid <= 1'b0;
+            data_rdata <= 32'h0;
+        end else begin
+            data_valid <= hit_r || ((r_state == R_REFILL) && dev_rvalid_d1) || ((r_state == R_UC_WAIT) && dev_rvalid_d1);
+            if ((r_state == R_REFILL) && dev_rvalid_d1)
+                data_rdata <= pick_word(dev_rdata, rd_addr_r[3:2]);
+            else if ((r_state == R_UC_WAIT) && dev_rvalid_d1)
+                data_rdata <= dev_rdata[31:0];
+            else if (hit_r)
+                data_rdata <= pick_word(cache_line_r[127:0], offset);
+        end
     end
 
     // ---- Cache write logic ----
-    wire refill_we    = (r_state == R_REFILL) && dev_rvalid;
+    wire refill_we    = (r_state == R_REFILL) && dev_rvalid_d1;
     wire write_hit_we = (w_state == W_LOOKUP) && dev_wrdy && hit_w;
     wire cache_we     = refill_we || write_hit_we;
     wire [133:0] cache_line_w = refill_we ? {1'b1, rd_addr_r[14:10], dev_rdata} :
@@ -128,9 +140,9 @@ module DCache(
         case (r_state)
             R_IDLE:    r_nstat = (|data_ren) ? (uncached ? (dev_rrdy ? R_UC_WAIT : R_UC_REQ) : R_LOOKUP) : R_IDLE;
             R_LOOKUP:  r_nstat = hit_r ? R_IDLE : (dev_rrdy ? R_REFILL : R_LOOKUP);
-            R_REFILL:  r_nstat = dev_rvalid ? R_IDLE : R_REFILL;
+            R_REFILL:  r_nstat = dev_rvalid_d1 ? R_IDLE : R_REFILL;
             R_UC_REQ:  r_nstat = dev_rrdy ? R_UC_WAIT : R_UC_REQ;
-            R_UC_WAIT: r_nstat = dev_rvalid ? R_IDLE : R_UC_WAIT;
+            R_UC_WAIT: r_nstat = dev_rvalid_d1 ? R_IDLE : R_UC_WAIT;
             default:   r_nstat = R_IDLE;
         endcase
     end
@@ -185,6 +197,12 @@ module DCache(
                         cpu_raddr <= {rd_addr_r[31:4], 4'b0000};
                     end
                 end
+                R_REFILL: begin
+                    if (!dev_rvalid) begin
+                        cpu_ren   <= 4'hF;
+                        cpu_raddr <= {rd_addr_r[31:4], 4'b0000};
+                    end
+                end
                 R_UC_REQ: begin
                     if (dev_rrdy) begin
                         cpu_ren   <= rd_ren_r;
@@ -211,6 +229,7 @@ module DCache(
                         cpu_wen   <= wr_wen_r;
                         cpu_waddr <= wr_addr_r;
                         cpu_wdata <= wr_data_r;
+                        $display("[DCache] WR issue addr=%x data=%x wen=%x", wr_addr_r, wr_data_r, wr_wen_r);
                     end
                 end
                 W_RESP: begin

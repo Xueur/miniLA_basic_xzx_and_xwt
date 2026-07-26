@@ -61,17 +61,51 @@ module ICache(
 
     wire hit = (state == LOOKUP) && valid_bit && (tag_from_cpu == tag_from_cache);
 
-    wire cache_we = (state == REFILL) && dev_rvalid;
-
+    // Delay dev_rvalid by 1 cycle — data is stable one cycle after rvalid asserts
+    reg dev_rvalid_d1;
     always @(posedge cpu_clk) begin
-        if (cache_we)
-            cache_mem[cache_index_w] <= cache_line_w;
+        if (cpu_rst) dev_rvalid_d1 <= 1'b0;
+        else         dev_rvalid_d1 <= dev_rvalid;
     end
 
-    always @(*) begin
-        inst_valid = hit | ((state == REFILL) && dev_rvalid);
-        inst_out   = (state == REFILL) ? pick_word(dev_rdata, offset)
-                                       : pick_word(cache_line_r[127:0], offset);
+    always @(posedge cpu_clk) begin
+        if (state == REFILL && dev_rvalid_d1)
+            cache_mem[cache_index_w] <= {1'b1, req_addr_r[14:10], dev_rdata};
+    end
+
+    // ----- DEBUG -----
+    reg [31:0] dbg_hit_cnt;
+    always @(posedge cpu_clk or posedge cpu_rst) begin
+        if (cpu_rst) begin
+            dbg_hit_cnt <= 0;
+        end else begin
+
+            if ((state == REFILL) && dev_rvalid_d1)
+                $display("[ICache] FILL idx=%d addr=%08x d0=%08x d1=%08x d2=%08x d3=%08x",
+                    cache_index_w, req_addr_r, dev_rdata[31:0], dev_rdata[63:32],
+                    dev_rdata[95:64], dev_rdata[127:96]);
+            if (hit) begin
+                dbg_hit_cnt <= dbg_hit_cnt + 1;
+                if (dbg_hit_cnt < 8)
+                    $display("[ICache] HIT  idx=%d pc=%08x inst=%08x",
+                        req_addr_r[9:4], req_addr_r, pick_word(cache_line_r[127:0], req_addr_r[3:2]));
+            end
+            if (state == REFILL && !dev_rvalid && !hit)
+                $display("[ICache] WAIT_REFILL pc=%08x dev_rrdy=%d", req_addr_r, dev_rrdy);
+        end
+    end
+
+    always @(posedge cpu_clk or posedge cpu_rst) begin
+        if (cpu_rst) begin
+            inst_valid <= 1'b0;
+            inst_out   <= 32'h0;
+        end else begin
+            inst_valid <= hit | ((state == REFILL) && dev_rvalid_d1);
+            if ((state == REFILL) && dev_rvalid_d1)
+                inst_out <= pick_word(dev_rdata, offset);
+            else if (hit)
+                inst_out <= pick_word(cache_line_r[127:0], offset);
+        end
     end
 
     always @(posedge cpu_clk or posedge cpu_rst) begin
@@ -89,20 +123,25 @@ module ICache(
         case (state)
             IDLE:   nstat = inst_rreq ? LOOKUP : IDLE;
             LOOKUP: nstat = hit ? IDLE : (dev_rrdy ? REFILL : LOOKUP);
-            REFILL: nstat = dev_rvalid ? IDLE : REFILL;
+            REFILL: nstat = dev_rvalid_d1 ? IDLE : REFILL;
             default:nstat = IDLE;
         endcase
     end
 
+    reg [31:0] refill_addr;
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
             cpu_ren   <= 4'h0;
             cpu_raddr <= 32'h0;
         end else begin
             cpu_ren <= 4'h0;
-            if (state == LOOKUP && !hit && dev_rrdy) begin
+            // Latch refill address once on LOOKUP miss
+            if (state == LOOKUP && !hit && dev_rrdy)
+                refill_addr <= {req_addr_r[31:4], 4'b0000};
+            // Hold cpu_ren during entire REFILL so axi_bus doesn't miss the pulse
+            if (state == REFILL && !dev_rvalid) begin
                 cpu_ren   <= 4'hF;
-                cpu_raddr <= {req_addr_r[31:4], 4'b0000};
+                cpu_raddr <= refill_addr;
             end
         end
     end

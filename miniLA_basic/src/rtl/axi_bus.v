@@ -3,66 +3,58 @@
 `include "defines.vh"
 
 // ================================================================
-// AXI4 Bus Controller (State Machine)
-//   Converts ICache/DCache simple requests into AXI4 transactions.
-//   - ICache refill: 4-beat read burst (128 bits)
-//   - DCache refill: 4-beat read burst (128 bits)
-//   - Uncached read:  1-beat read
-//   - Write:          1-beat write
-//   Priority: ICache > DCache read > DCache write
+// axi_bus — AXI4 Bus Controller
+//   Read:  IDLE → SEND_RREQ → WAIT_R → PACKAGE → IDLE
+//   Write: IDLE → SEND_WREQ → WAIT_AW → WAIT_W → WAIT_B → IDLE
+//   Priority: DCache > ICache
 // ================================================================
 
 module axi_bus #(
-    parameter IC_BLK_LEN = `IC_BLK_LEN,   // burst length for I$ refill (default 4)
-    parameter DC_BLK_LEN = `DC_BLK_LEN    // burst length for D$ refill (default 4)
+    parameter IC_BLK_LEN = `IC_BLK_LEN,
+    parameter DC_BLK_LEN = `DC_BLK_LEN
 )(
     input  wire         aclk,
-    input  wire         areset,         // high active
+    input  wire         areset,
 
     // ---- ICache Interface ----
-    output wire         ic_dev_rrdy,
+    output reg          ic_dev_rrdy,
     input  wire         ic_cpu_ren,
     input  wire [31:0]  ic_cpu_raddr,
-    output wire         ic_dev_rvalid,
-    output wire [`IC_BLK_SIZE-1:0] ic_dev_rdata,
+    output reg          ic_dev_rvalid,
+    output reg  [127:0] ic_dev_rdata,
 
     // ---- DCache Interface ----
-    output wire         dc_dev_wrdy,
+    output reg          dc_dev_wrdy,
     input  wire [ 3:0]  dc_cpu_wen,
     input  wire [31:0]  dc_cpu_waddr,
     input  wire [31:0]  dc_cpu_wdata,
-    output wire         dc_dev_rrdy,
+    output reg          dc_dev_rrdy,
     input  wire         dc_cpu_ren,
     input  wire [31:0]  dc_cpu_raddr,
-    output wire         dc_dev_rvalid,
-    output wire [`DC_BLK_SIZE-1:0] dc_dev_rdata,
+    output reg          dc_dev_rvalid,
+    output reg  [127:0] dc_dev_rdata,
 
     // ---- AXI4 Master Interface ----
-    // Write address channel
     output reg  [31:0]  m_axi_awaddr,
     output reg  [ 7:0]  m_axi_awlen,
     output reg  [ 2:0]  m_axi_awsize,
     output reg  [ 1:0]  m_axi_awburst,
     input  wire         m_axi_awready,
     output reg          m_axi_awvalid,
-    // Write data channel
     output reg  [31:0]  m_axi_wdata,
     input  wire         m_axi_wready,
     output reg  [ 3:0]  m_axi_wstrb,
     output reg          m_axi_wlast,
     output reg          m_axi_wvalid,
-    // Write response channel
     output reg          m_axi_bready,
     input  wire [ 1:0]  m_axi_bresp,
     input  wire         m_axi_bvalid,
-    // Read address channel
     output reg  [31:0]  m_axi_araddr,
     output reg  [ 7:0]  m_axi_arlen,
     output reg  [ 2:0]  m_axi_arsize,
     output reg  [ 1:0]  m_axi_arburst,
     input  wire         m_axi_arready,
     output reg          m_axi_arvalid,
-    // Read data channel
     input  wire [31:0]  m_axi_rdata,
     output reg          m_axi_rready,
     input  wire [ 1:0]  m_axi_rresp,
@@ -71,241 +63,223 @@ module axi_bus #(
 );
 
     // ============================================================
-    // State Machine
+    // Read State Machine: IDLE → SEND_RREQ → WAIT_R → PACKAGE
     // ============================================================
-    localparam S_IDLE       = 4'd0;
-    localparam S_IC_RD_AR   = 4'd1;   // ICache read: assert AR
-    localparam S_IC_RD_DATA = 4'd2;   // ICache read: receive R data (burst)
-    localparam S_DC_RD_AR   = 4'd3;   // DCache read: assert AR
-    localparam S_DC_RD_DATA = 4'd4;   // DCache read: receive R data (burst or single)
-    localparam S_DC_WR_AW   = 4'd5;   // DCache write: assert AW
-    localparam S_DC_WR_W    = 4'd6;   // DCache write: send W data
-    localparam S_DC_WR_B    = 4'd7;   // DCache write: wait for B
+    localparam R_IDLE       = 2'd0;
+    localparam R_SEND_RREQ  = 2'd1;
+    localparam R_WAIT_R     = 2'd2;
+    localparam R_PACKAGE    = 2'd3;
 
-    reg [3:0] state, nstate;
+    reg [1:0] r_state, r_nstate;
+    reg       rd_for_icache;
+    reg [7:0] rd_burst_len;
+    reg [7:0] rd_beat_cnt;
+    reg [31:0] rd_buf [0:7];
 
-    // Burst beat counter
-    reg [7:0] beat_cnt;
-    reg       is_cached_rd;       // cached read (4-beat) vs uncached (1-beat)
+    wire dc_has_rd    = dc_cpu_ren;
+    wire ic_has_rd    = ic_cpu_ren;
+    wire dc_rd_cached = dc_has_rd && (dc_cpu_raddr[31:16] != 16'hFFFF);
 
-    // Data accumulation for reads (always 128 bits internally)
-    reg [127:0] ic_rdata_buf;
-    reg [127:0] dc_rdata_buf;
-
-    // Latched request info
-    reg [31:0] ic_raddr_r;
-    reg [31:0] dc_raddr_r;
-    reg        dc_is_cached_r;
-    reg [31:0] dc_waddr_r;
-    reg [ 3:0] dc_wen_r;
-    reg [31:0] dc_wdata_r;
-
-    // ============================================================
-    // Ready signals to caches
-    // ============================================================
-    wire ic_has_req = ic_cpu_ren;   // active high pulse
-    wire dc_has_rd  = dc_cpu_ren;   // active high pulse
-    wire dc_has_wr  = |dc_cpu_wen;  // active high pulse
-
-    // Ready when in IDLE and no higher-priority request is pending
-    assign ic_dev_rrdy = (state == S_IDLE);
-    assign dc_dev_rrdy = (state == S_IDLE) && !ic_has_req;
-    assign dc_dev_wrdy = (state == S_IDLE) && !ic_has_req && !dc_has_rd;
-
-    // ============================================================
-    // Read data valid to caches
-    // ============================================================
-    assign ic_dev_rvalid = (state == S_IC_RD_DATA) && m_axi_rvalid && m_axi_rlast;
-    assign ic_dev_rdata  = ic_rdata_buf;
-
-    assign dc_dev_rvalid = (state == S_DC_RD_DATA) && m_axi_rvalid && m_axi_rlast;
-    assign dc_dev_rdata  = dc_rdata_buf;
-
-    // ============================================================
-    // State register
-    // ============================================================
-    always @(posedge aclk or posedge areset) begin
-        if (areset)
-            state <= S_IDLE;
-        else
-            state <= nstate;
+    // Ready — only in IDLE. DCache priority.
+    always @(*) begin
+        ic_dev_rrdy = (r_state == R_IDLE) && !dc_rd_cached && !dc_has_rd;
+        dc_dev_rrdy = (r_state == R_IDLE);
     end
 
-    // ============================================================
-    // Next state logic + latch requests
-    // ============================================================
+    // Valid — pulsed on last beat
     always @(*) begin
-        nstate = state;
-        case (state)
-            S_IDLE: begin
-                if (ic_has_req)
-                    nstate = S_IC_RD_AR;
-                else if (dc_has_rd)
-                    nstate = S_DC_RD_AR;
-                else if (dc_has_wr)
-                    nstate = S_DC_WR_AW;
-            end
-            S_IC_RD_AR:   if (m_axi_arready) nstate = S_IC_RD_DATA;
-            S_IC_RD_DATA: if (m_axi_rvalid && m_axi_rlast) nstate = S_IDLE;
-            S_DC_RD_AR:   if (m_axi_arready) nstate = S_DC_RD_DATA;
-            S_DC_RD_DATA: if (m_axi_rvalid && m_axi_rlast) nstate = S_IDLE;
-            S_DC_WR_AW:   if (m_axi_awready) nstate = S_DC_WR_W;
-            S_DC_WR_W:    if (m_axi_wready)  nstate = S_DC_WR_B;
-            S_DC_WR_B:    if (m_axi_bvalid)  nstate = S_IDLE;
+        ic_dev_rvalid = 1'b0;
+        dc_dev_rvalid = 1'b0;
+        if ((r_state == R_WAIT_R || r_state == R_PACKAGE) && m_axi_rvalid && m_axi_rlast) begin
+            if (rd_for_icache)
+                ic_dev_rvalid = 1'b1;
+            else
+                dc_dev_rvalid = 1'b1;
+        end
+    end
+
+    always @(posedge aclk or posedge areset) begin
+        if (areset) r_state <= R_IDLE;
+        else        r_state <= r_nstate;
+    end
+
+    always @(*) begin
+        case (r_state)
+            R_IDLE:        if ((dc_rd_cached || dc_has_rd || ic_has_rd) && !w_busy) r_nstate = R_SEND_RREQ; else r_nstate = R_IDLE;
+            R_SEND_RREQ:   r_nstate = m_axi_arready ? R_WAIT_R : R_SEND_RREQ;
+            R_WAIT_R:      r_nstate = m_axi_rvalid ? (m_axi_rlast ? R_IDLE : R_PACKAGE) : R_WAIT_R;
+            R_PACKAGE:     r_nstate = m_axi_rvalid ? (m_axi_rlast ? R_IDLE : R_PACKAGE) : R_PACKAGE;
+            default:       r_nstate = R_IDLE;
         endcase
     end
 
-    // ============================================================
-    // Latch request info on entry to each state
-    // ============================================================
-    always @(posedge aclk) begin
-        if (state == S_IDLE) begin
-            if (ic_has_req) begin
-                ic_raddr_r <= ic_cpu_raddr;
+    always @(posedge aclk or posedge areset) begin
+        if (areset) begin
+            rd_for_icache <= 1'b0;
+            rd_burst_len  <= 8'd0;
+        end else if (r_state == R_IDLE) begin
+            if (dc_rd_cached) begin
+                rd_for_icache <= 1'b0;
+                rd_burst_len  <= DC_BLK_LEN;
+            end else if (ic_has_rd) begin
+                rd_for_icache <= 1'b1;
+                rd_burst_len  <= IC_BLK_LEN;
             end else if (dc_has_rd) begin
-                dc_raddr_r     <= dc_cpu_raddr;
-                dc_is_cached_r <= (dc_cpu_raddr[31:16] != 16'hFFFF);
-            end else if (dc_has_wr) begin
-                dc_waddr_r <= dc_cpu_waddr;
-                dc_wen_r   <= dc_cpu_wen;
-                dc_wdata_r <= dc_cpu_wdata;
+                rd_for_icache <= 1'b0;
+                rd_burst_len  <= 8'd1;
             end
         end
     end
 
-    // ============================================================
-    // Beat counter
-    // ============================================================
-    wire rd_last_beat = (beat_cnt == m_axi_arlen);
-
+    // AR channel
     always @(posedge aclk or posedge areset) begin
         if (areset) begin
-            beat_cnt <= 8'd0;
-        end else begin
-            if (state == S_IC_RD_AR || state == S_DC_RD_AR)
-                beat_cnt <= 8'd0;
-            else if (m_axi_rvalid && m_axi_rready)
-                beat_cnt <= beat_cnt + 8'd1;
-        end
-    end
-
-    // ============================================================
-    // Read data accumulation
-    // ============================================================
-    always @(posedge aclk) begin
-        if (m_axi_rvalid && m_axi_rready) begin
-            case (beat_cnt[2:0])
-                3'd0: begin ic_rdata_buf[ 31: 0] <= m_axi_rdata; dc_rdata_buf[ 31: 0] <= m_axi_rdata; end
-                3'd1: begin ic_rdata_buf[ 63:32] <= m_axi_rdata; dc_rdata_buf[ 63:32] <= m_axi_rdata; end
-                3'd2: begin ic_rdata_buf[ 95:64] <= m_axi_rdata; dc_rdata_buf[ 95:64] <= m_axi_rdata; end
-                3'd3: begin ic_rdata_buf[127:96] <= m_axi_rdata; dc_rdata_buf[127:96] <= m_axi_rdata; end
-            endcase
-        end
-    end
-
-    // ============================================================
-    // AXI Read Address Channel
-    // ============================================================
-    always @(posedge aclk or posedge areset) begin
-        if (areset) begin
+            m_axi_arvalid <= 1'b0;
             m_axi_araddr  <= 32'h0;
             m_axi_arlen   <= 8'd0;
             m_axi_arsize  <= 3'd2;
             m_axi_arburst <= 2'b01;
-            m_axi_arvalid <= 1'b0;
         end else begin
-            if (m_axi_arready) begin
-                m_axi_arvalid <= 1'b0;
-            end
-            case (state)
-                S_IDLE: begin
-                    if (ic_has_req) begin
-                        m_axi_araddr  <= {ic_cpu_raddr[31:4], 4'b0000};
-                        m_axi_arlen   <= IC_BLK_LEN - 1;     // 4 beats -> len=3
-                        m_axi_arsize  <= 3'd2;               // 4 bytes per beat
-                        m_axi_arburst <= 2'b01;              // INCR
-                        m_axi_arvalid <= 1'b1;
-                    end else if (dc_has_rd) begin
-                        m_axi_araddr  <= dc_cpu_raddr;
-                        if (dc_cpu_raddr[31:16] == 16'hFFFF) begin
-                            // Uncached: single beat
-                            m_axi_arlen   <= 8'd0;
-                            m_axi_arsize  <= 3'd2;
-                        end else begin
-                            // Cached: burst
-                            m_axi_araddr  <= {dc_cpu_raddr[31:4], 4'b0000};
-                            m_axi_arlen   <= DC_BLK_LEN - 1;
-                            m_axi_arsize  <= 3'd2;
-                        end
-                        m_axi_arburst <= 2'b01;
-                        m_axi_arvalid <= 1'b1;
-                    end
+            if (r_state == R_IDLE && (dc_rd_cached || ic_has_rd || dc_has_rd)) begin
+                m_axi_arvalid <= 1'b1;
+                m_axi_arsize  <= 3'd2;
+                m_axi_arburst <= 2'b01;
+                if (dc_rd_cached) begin
+                    m_axi_araddr <= {dc_cpu_raddr[31:4], 4'b0000};
+                    m_axi_arlen  <= DC_BLK_LEN - 1;
+                end else if (ic_has_rd) begin
+                    m_axi_araddr <= (IC_BLK_LEN > 1) ? {ic_cpu_raddr[31:4], 4'b0000} : ic_cpu_raddr;
+                    m_axi_arlen  <= IC_BLK_LEN - 1;
+                end else begin
+                    m_axi_araddr <= dc_cpu_raddr;
+                    m_axi_arlen  <= 8'd0;
                 end
+            end else if (m_axi_arready)
+                m_axi_arvalid <= 1'b0;
+        end
+    end
+
+    // R channel — ready in WAIT_R / PACKAGE
+    always @(*) m_axi_rready = (r_state == R_WAIT_R) || (r_state == R_PACKAGE);
+
+    // Beat counter and data accumulation
+    always @(posedge aclk or posedge areset) begin
+        if (areset) begin
+            rd_beat_cnt <= 8'd0;
+        end else begin
+            if (r_state == R_IDLE)
+                rd_beat_cnt <= 8'd0;
+            else if (m_axi_rvalid && m_axi_rready)
+                rd_beat_cnt <= rd_beat_cnt + 8'd1;
+        end
+    end
+
+    always @(posedge aclk) begin
+        if (m_axi_rvalid && m_axi_rready)
+            rd_buf[rd_beat_cnt] <= m_axi_rdata;
+    end
+
+    // Output data — use m_axi_rdata for last beat directly, avoids race with rd_buf[3]
+    always @(posedge aclk or posedge areset) begin
+        if (areset) begin
+            ic_dev_rdata <= 128'd0;
+            dc_dev_rdata <= 128'd0;
+        end else if ((r_state == R_WAIT_R || r_state == R_PACKAGE) && m_axi_rvalid && m_axi_rlast) begin
+            if (rd_for_icache)
+                ic_dev_rdata <= {m_axi_rdata, rd_buf[2], rd_buf[1], rd_buf[0]};
+            else
+                dc_dev_rdata <= {m_axi_rdata, rd_buf[2], rd_buf[1], rd_buf[0]};
+            $display("[AXI] RD done: %s addr=%08x d0=%08x d1=%08x d2=%08x d3=%08x",
+                rd_for_icache ? "IC" : "DC", m_axi_araddr,
+                rd_buf[0], rd_buf[1], rd_buf[2], m_axi_rdata);
+        end
+    end
+
+    // ============================================================
+    // Write State Machine: IDLE → SEND_WREQ → WAIT_AW → WAIT_W → WAIT_B
+    // ============================================================
+    localparam W_IDLE       = 3'd0;
+    localparam W_SEND_WREQ  = 3'd1;
+    localparam W_WAIT_AW    = 3'd2;   // W already done, waiting for AW
+    localparam W_WAIT_W     = 3'd3;   // AW already done, waiting for W
+    localparam W_WAIT_B     = 3'd4;
+
+    reg [2:0] w_state, w_nstate;
+    reg [31:0] w_addr_r;
+    reg [ 3:0] w_wen_r;
+    reg [31:0] w_data_r;
+    reg        w_done;       // W handshake completed
+    reg        aw_done;      // AW handshake completed
+
+    wire r_busy = (r_state != R_IDLE);
+    wire w_busy = (w_state != W_IDLE);
+
+    always @(*) begin
+        dc_dev_wrdy = (w_state == W_IDLE) && !dc_rd_cached;
+    end
+
+    always @(posedge aclk or posedge areset) begin
+        if (areset) w_state <= W_IDLE;
+        else        w_state <= w_nstate;
+    end
+
+    always @(*) begin
+        if (m_axi_bvalid) begin
+            w_nstate = W_IDLE;  // bvalid ends the write immediately, no matter which state
+        end else begin
+            case (w_state)
+                W_IDLE:      w_nstate = (|dc_cpu_wen) ? W_SEND_WREQ : W_IDLE;
+                W_SEND_WREQ: begin
+                    if (m_axi_awready && m_axi_wready)     w_nstate = W_IDLE;
+                    else if (m_axi_wready && !m_axi_awready) w_nstate = W_WAIT_AW;
+                    else if (m_axi_awready && !m_axi_wready) w_nstate = W_WAIT_W;
+                    else                                      w_nstate = W_SEND_WREQ;
+                end
+                W_WAIT_AW:   w_nstate = m_axi_awready ? W_IDLE : W_WAIT_AW;
+                W_WAIT_W:    w_nstate = m_axi_wready  ? W_IDLE : W_WAIT_W;
+                default:     w_nstate = W_IDLE;
             endcase
         end
     end
 
-    // ============================================================
-    // AXI Read Data Channel
-    // ============================================================
-    always @(*) begin
-        m_axi_rready = (state == S_IC_RD_DATA) || (state == S_DC_RD_DATA);
-    end
-
-    // ============================================================
-    // AXI Write Address Channel
-    // ============================================================
     always @(posedge aclk or posedge areset) begin
         if (areset) begin
-            m_axi_awaddr  <= 32'h0;
-            m_axi_awlen   <= 8'd0;
-            m_axi_awsize  <= 3'd2;
-            m_axi_awburst <= 2'b01;
-            m_axi_awvalid <= 1'b0;
+            m_axi_awvalid <= 1'b0; m_axi_wvalid <= 1'b0; m_axi_wlast <= 1'b0;
+            m_axi_bready  <= 1'b0; m_axi_awaddr <= 32'h0; m_axi_awlen <= 8'd0;
+            m_axi_awsize  <= 3'd2; m_axi_awburst <= 2'b01; m_axi_wdata <= 32'h0;
+            m_axi_wstrb   <= 4'h0; w_done <= 1'b0; aw_done <= 1'b0;
         end else begin
-            if (m_axi_awready)
-                m_axi_awvalid <= 1'b0;
-            if (state == S_IDLE && dc_has_wr && !ic_has_req && !dc_has_rd) begin
-                m_axi_awaddr  <= dc_cpu_waddr;
-                m_axi_awlen   <= 8'd0;     // single beat
-                m_axi_awsize  <= 3'd2;
-                m_axi_awburst <= 2'b01;
-                m_axi_awvalid <= 1'b1;
-            end
+            case (w_state)
+                W_IDLE: if (|dc_cpu_wen) begin
+                    w_addr_r <= dc_cpu_waddr; w_wen_r <= dc_cpu_wen; w_data_r <= dc_cpu_wdata;
+                    $display("[AXI] WR REQ detected wen=%x addr=%x data=%x", dc_cpu_wen, dc_cpu_waddr, dc_cpu_wdata);
+                end
+                W_SEND_WREQ: begin
+                    m_axi_awaddr  <= w_addr_r;  m_axi_awlen <= 8'd0;
+                    m_axi_awsize  <= 3'd2;      m_axi_awburst <= 2'b01;
+                    m_axi_awvalid <= 1'b1;      m_axi_wdata  <= w_data_r;
+                    m_axi_wstrb   <= w_wen_r;   m_axi_wlast  <= 1'b1;
+                    m_axi_wvalid  <= 1'b1;      m_axi_bready <= 1'b1;
+                    w_done <= 1'b0; aw_done <= 1'b0;
+                end
+                W_WAIT_AW: begin
+                    m_axi_wvalid <= 1'b0;
+                    m_axi_bready <= 1'b1;
+                    if (m_axi_awready) m_axi_awvalid <= 1'b0;
+                end
+                W_WAIT_W: begin
+                    m_axi_awvalid <= 1'b0;
+                    m_axi_bready <= 1'b1;
+                    if (m_axi_wready) m_axi_wvalid <= 1'b0;
+                end
+                default: begin
+                    if (m_axi_bvalid) begin
+                        m_axi_bready <= 1'b0;
+                        m_axi_wlast  <= 1'b0;
+                    end
+                end
+            endcase
         end
-    end
-
-    // ============================================================
-    // AXI Write Data Channel
-    // ============================================================
-    always @(posedge aclk or posedge areset) begin
-        if (areset) begin
-            m_axi_wdata  <= 32'h0;
-            m_axi_wstrb  <= 4'h0;
-            m_axi_wlast  <= 1'b0;
-            m_axi_wvalid <= 1'b0;
-        end else begin
-            if (m_axi_wready) begin
-                m_axi_wvalid <= 1'b0;
-                m_axi_wlast  <= 1'b0;
-            end
-            if (state == S_DC_WR_AW && m_axi_awready) begin
-                m_axi_wdata  <= dc_wdata_r;
-                m_axi_wstrb  <= dc_wen_r;
-                m_axi_wlast  <= 1'b1;      // single beat, last = 1
-                m_axi_wvalid <= 1'b1;
-            end
-        end
-    end
-
-    // ============================================================
-    // AXI Write Response Channel
-    // ============================================================
-    always @(posedge aclk or posedge areset) begin
-        if (areset)
-            m_axi_bready <= 1'b0;
-        else
-            m_axi_bready <= (state == S_DC_WR_B);
     end
 
 endmodule
