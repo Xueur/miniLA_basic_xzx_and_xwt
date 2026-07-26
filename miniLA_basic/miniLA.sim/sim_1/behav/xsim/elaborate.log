@@ -5,14 +5,9 @@ Running: D:/Xilinx/Vivado/2023.2/bin/unwrapped/win64.o/xelab.exe --incr --debug 
 Using 2 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
-WARNING: [VRFC 10-3091] actual bit length 24 differs from formal bit length 16 for port 'sw' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/sim/soc_simple_tb.v:29]
-WARNING: [VRFC 10-3091] actual bit length 24 differs from formal bit length 16 for port 'led' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/sim/soc_simple_tb.v:30]
 WARNING: [VRFC 10-3091] actual bit length 64 differs from formal bit length 66 for port 'z' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/ALU.v:132]
 WARNING: [VRFC 10-3091] actual bit length 32 differs from formal bit length 33 for port 'z' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/ALU.v:155]
 WARNING: [VRFC 10-3091] actual bit length 32 differs from formal bit length 33 for port 'r' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/ALU.v:156]
-WARNING: [VRFC 10-3091] actual bit length 128 differs from formal bit length 32 for port 'dev_rdata' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/cpu_top.v:107]
-WARNING: [VRFC 10-3091] actual bit length 128 differs from formal bit length 32 for port 'dev_rdata' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/cpu_top.v:131]
-WARNING: [VRFC 10-5021] port 'm_axi_awready' is not connected on this instance [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/miniLA_SoC.v:34]
 Completed static elaboration
 Starting simulation data flow analysis
 Completed simulation data flow analysis
@@ -39,7 +34,10 @@ Compiling module xil_defaultlib.ICache
 Compiling module xil_defaultlib.DCache
 Compiling module xil_defaultlib.axi_bus
 Compiling module xil_defaultlib.cpu_top
+Compiling module xil_defaultlib.bram_axi_default
+WARNING: [XSIM 43-3373] "D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/bram_axi.v" Line 190. System function $fread is used as system task. This system function should have a LHS e.g. x=$fread().
 Compiling module xil_defaultlib.miniLA_SoC
+WARNING: [XSIM 43-3373] "D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/miniLA_SoC.v" Line 134. System function $fread is used as system task. This system function should have a LHS e.g. x=$fread().
 Compiling module xil_defaultlib.soc_simple_tb
 Compiling module xil_defaultlib.glbl
 Built simulation snapshot soc_simple_tb_behav

@@ -24,6 +24,9 @@ INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Vivado/miniLA_basic_xzx_and_xwt/
 INFO: [VRFC 10-311] analyzing module RF
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/axi_bus.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module axi_bus
+WARNING: [VRFC 10-3380] identifier 'w_state' is used before its declaration [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/axi_bus.v:108]
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/bram_axi.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module bram_axi
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/cpu_core.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module cpu_core
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic/src/rtl/cpu_top.v" into library xil_defaultlib
