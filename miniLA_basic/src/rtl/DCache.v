@@ -229,7 +229,6 @@ module DCache(
                         cpu_wen   <= wr_wen_r;
                         cpu_waddr <= wr_addr_r;
                         cpu_wdata <= wr_data_r;
-                        $display("[DCache] WR issue addr=%x data=%x wen=%x", wr_addr_r, wr_data_r, wr_wen_r);
                     end
                 end
                 W_RESP: begin

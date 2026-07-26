@@ -189,9 +189,6 @@ module axi_bus #(
                 ic_dev_rdata <= {m_axi_rdata, rd_buf[2], rd_buf[1], rd_buf[0]};
             else
                 dc_dev_rdata <= {m_axi_rdata, rd_buf[2], rd_buf[1], rd_buf[0]};
-            $display("[AXI] RD done: %s addr=%08x d0=%08x d1=%08x d2=%08x d3=%08x",
-                rd_for_icache ? "IC" : "DC", m_axi_araddr,
-                rd_buf[0], rd_buf[1], rd_buf[2], m_axi_rdata);
         end
     end
 
@@ -252,7 +249,6 @@ module axi_bus #(
             case (w_state)
                 W_IDLE: if (|dc_cpu_wen) begin
                     w_addr_r <= dc_cpu_waddr; w_wen_r <= dc_cpu_wen; w_data_r <= dc_cpu_wdata;
-                    $display("[AXI] WR REQ detected wen=%x addr=%x data=%x", dc_cpu_wen, dc_cpu_waddr, dc_cpu_wdata);
                 end
                 W_SEND_WREQ: begin
                     m_axi_awaddr  <= w_addr_r;  m_axi_awlen <= 8'd0;

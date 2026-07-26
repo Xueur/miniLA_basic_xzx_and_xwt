@@ -73,28 +73,6 @@ module ICache(
             cache_mem[cache_index_w] <= {1'b1, req_addr_r[14:10], dev_rdata};
     end
 
-    // ----- DEBUG -----
-    reg [31:0] dbg_hit_cnt;
-    always @(posedge cpu_clk or posedge cpu_rst) begin
-        if (cpu_rst) begin
-            dbg_hit_cnt <= 0;
-        end else begin
-
-            if ((state == REFILL) && dev_rvalid_d1)
-                $display("[ICache] FILL idx=%d addr=%08x d0=%08x d1=%08x d2=%08x d3=%08x",
-                    cache_index_w, req_addr_r, dev_rdata[31:0], dev_rdata[63:32],
-                    dev_rdata[95:64], dev_rdata[127:96]);
-            if (hit) begin
-                dbg_hit_cnt <= dbg_hit_cnt + 1;
-                if (dbg_hit_cnt < 8)
-                    $display("[ICache] HIT  idx=%d pc=%08x inst=%08x",
-                        req_addr_r[9:4], req_addr_r, pick_word(cache_line_r[127:0], req_addr_r[3:2]));
-            end
-            if (state == REFILL && !dev_rvalid && !hit)
-                $display("[ICache] WAIT_REFILL pc=%08x dev_rrdy=%d", req_addr_r, dev_rrdy);
-        end
-    end
-
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
             inst_valid <= 1'b0;

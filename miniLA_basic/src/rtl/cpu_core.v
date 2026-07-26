@@ -250,17 +250,6 @@ module cpu_core(
 
     /********************* Your CPU ends here *********************/
 
-    // ----- DEBUG: print writebacks -----
-    reg [31:0] dbg_wb_cnt;
-    always @(posedge cpu_clk) begin
-        if (cpu_rst) dbg_wb_cnt <= 0;
-        else if (rf_we1) begin
-            dbg_wb_cnt <= dbg_wb_cnt + 1;
-            if (dbg_wb_cnt < 10)
-                $display("[WB] pc=%08x we=%d wR=%d wD=%08x", pc, rf_we1, rf_wR1, rf_wD);
-        end
-    end
-
 `ifdef RUN_TRACE
     wire [31:0] debug_wb_pc    /* verilator public */ ;     // WB阶段的PC
     wire        debug_wb_rf_we /* verilator public */ ;     // WB阶段的寄存器写使能
