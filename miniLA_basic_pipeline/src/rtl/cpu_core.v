@@ -431,28 +431,6 @@ module cpu_core(
                    MEM_WB_alu_c;
 
     // ================================================================
-    // Debug trace
-    // ================================================================
-    reg [31:0] dbg_cnt;
-    always @(posedge cpu_clk or posedge cpu_rst) begin
-        if (cpu_rst) begin
-            dbg_cnt <= 0;
-        end else begin
-            dbg_cnt <= dbg_cnt + 1;
-            if (flush)
-                $display("[PIPE %d] === FLUSH br_taken=%d npc=%08x stall=%d ===", dbg_cnt, br_taken, npc, stall);
-            if (!stall && !flush)
-                $display("[PIPE %d] IF->ID pc=%08x inst=%08x valid=%d", dbg_cnt, if_pc_delayed, ifetch_valid ? ifetch_inst : 32'h0, ifetch_valid);
-            if (!flush && !stall)
-                $display("[PIPE %d] ID->EX pc=%08x inst=%08x rf_we=%d", dbg_cnt, IF_ID_pc, IF_ID_inst, id_rf_we);
-            if (!stall)
-                $display("[PIPE %d] EX->MEM pc=%08x rf_we=%d", dbg_cnt, ID_EX_pc, ID_EX_rf_we);
-            if (MEM_WB_rf_we)
-                $display("[PIPE %d] WB pc=%08x rd=%d wD=%08x", dbg_cnt, MEM_WB_pc, MEM_WB_rd, wb_wD);
-        end
-    end
-
-    // ================================================================
 `ifdef RUN_TRACE
     wire [31:0] debug_wb_pc    /* verilator public */ ;
     wire        debug_wb_rf_we /* verilator public */ ;
