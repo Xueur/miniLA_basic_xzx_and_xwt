@@ -33,6 +33,10 @@ THE SOFTWARE.
 /*
  * AXI4 RAM
  */
+
+
+
+
 module bram_axi #
 (
     // Width of data bus in bits
@@ -180,9 +184,9 @@ initial begin
             mem[j] = 0;
         end
     end
-    mem_file = $fopen(`STRINGIFY(`PATH), "r");
+    mem_file = $fopen("meminit.bin", "r");
     if(mem_file != 0) begin
-        $display("[INFO] Instruction ROM initialized with %s", `STRINGIFY(`PATH));
+        $display("[INFO] Instruction ROM initialized with %s", "meminit.bin");
         $fread(mem_rd, mem_file);
         for (i = 0; i < 2**depth_width; i = i + 2**(depth_width/2)) begin
             for (j = i; j < i + 2**(depth_width/2); j = j + 1) begin
