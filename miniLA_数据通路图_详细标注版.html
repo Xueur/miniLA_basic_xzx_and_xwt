@@ -1,0 +1,227 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>miniLA 全模块端口标注图</title>
+<style>*{margin:0;padding:0}body{background:#fff;display:flex;justify-content:center;padding:8px;font-family:'Microsoft YaHei',sans-serif}</style></head><body>
+<svg viewBox="0 0 1600 820" width="1600" height="820" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <pattern id="g" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0L0 0 0 20" fill="none" stroke="#e8e8e8" stroke-width="0.3"/></pattern>
+  <marker id="a" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0,0 7,2.5 0,5" fill="#111"/></marker>
+</defs>
+<rect x="0" y="0" width="1600" height="820" fill="url(#g)"/>
+
+<!-- ================================================================== -->
+<!-- Row1: PC, Inst_ROM, Controller y=60-170 -->
+<!-- ================================================================== -->
+
+<!-- PC -->
+<rect x="25" y="60" width="130" height="105" rx="5" fill="#f9fafb" stroke="#111" stroke-width="2"/>
+<text x="90" y="84" text-anchor="middle" font-size="13" font-weight="bold">PC</text>
+<line x1="38" y1="90" x2="142" y2="90" stroke="#ddd" stroke-width="0.5"/>
+<text x="32" y="106" font-size="9">← clk（时钟，1位）</text>
+<text x="32" y="122" font-size="9">← rst（复位，1位）</text>
+<text x="32" y="138" font-size="9">← fetch=inst_finished</text>
+<text x="32" y="154" font-size="9">← npc（来自NPC）</text>
+<text x="108" y="106" font-size="9">→ pc（32位）</text>
+<text x="108" y="122" font-size="9">→ if_req</text>
+
+<!-- Inst_ROM 虚线 -->
+<rect x="210" y="60" width="160" height="105" rx="5" fill="#fafafa" stroke="#111" stroke-width="1.8" stroke-dasharray="8,4"/>
+<text x="290" y="84" text-anchor="middle" font-size="13" font-weight="bold">Inst_ROM</text>
+<line x1="223" y1="90" x2="357" y2="90" stroke="#ddd" stroke-width="0.5" stroke-dasharray="4,2"/>
+<text x="218" y="106" font-size="9">← addr（来自PC.pc）</text>
+<text x="218" y="122" font-size="9">← if_valid</text>
+<text x="320" y="106" font-size="9">→ inst[31:0]（32位）</text>
+<text x="250" y="150" font-size="7" fill="#888">虚线 = 片外存储</text>
+
+<!-- Controller -->
+<rect x="425" y="60" width="240" height="105" rx="5" fill="#fefce8" stroke="#111" stroke-width="2"/>
+<text x="545" y="84" text-anchor="middle" font-size="13" font-weight="bold">Controller</text>
+<line x1="438" y1="90" x2="652" y2="90" stroke="#ddd" stroke-width="0.5"/>
+<text x="432" y="106" font-size="9">← inst[31:15]（操作码，17位）</text>
+<text x="585" y="106" font-size="9">→ npc_op[1:0]</text>
+<text x="585" y="120" font-size="9">→ ext_op[2:0]</text>
+<text x="585" y="134" font-size="9">→ alu_op[4:0]</text>
+<text x="585" y="148" font-size="9">→ alua_sel alub_sel r2_sel</text>
+<text x="585" y="162" font-size="9">→ ram_r_op ram_w_op rf_we rf_wsel</text>
+
+<!-- ================================================================== -->
+<!-- Row2: RF(+MUXes), EXT, ALU(+MUXes), MREQ, MEXT  y=240-360 -->
+<!-- ================================================================== -->
+
+<!-- RF 框（包含内部两个 MUX 标注） -->
+<rect x="25" y="240" width="210" height="115" rx="5" fill="#f9fafb" stroke="#111" stroke-width="2"/>
+<text x="130" y="264" text-anchor="middle" font-size="13" font-weight="bold">RF (32×32 寄存器堆)</text>
+<line x1="38" y1="270" x2="222" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="32" y="286" font-size="9">← clk</text>
+<text x="32" y="302" font-size="9">← rR1 = inst[9:5] ← 固定读 rj</text>
+<text x="32" y="318" font-size="9">← rR2 ← [r2_sel MUX] 选出</text>
+<text x="32" y="334" font-size="9">← wR  ← [wr_sel MUX] 选出</text>
+<text x="32" y="348" font-size="9">← wD[31:0]（写数据，来自WB-MUX）</text>
+<text x="180" y="286" font-size="9">→ rD1（32位）</text>
+<text x="180" y="302" font-size="9">→ rD2（32位）</text>
+
+<!-- r2_sel MUX（RF 左边下方） -->
+<polygon points="260,316 274,330 260,344 246,330" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="278" y="327" font-size="8">r2_sel MUX</text>
+<text x="233" y="308" font-size="7">inst[14:10](rk)</text>
+<text x="233" y="352" font-size="7">inst[4:0](rd)</text>
+<text x="300" y="316" font-size="7">r2_sel=1→rk</text>
+<text x="300" y="344" font-size="7">r2_sel=0→rd</text>
+
+<!-- wr_sel MUX（RF 左上方） -->
+<polygon points="260,290 274,304 260,318 246,304" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="278" y="301" font-size="8">wr_sel MUX</text>
+<text x="233" y="282" font-size="7">inst[4:0](rd)</text>
+<text x="233" y="326" font-size="7">5'h1($ra)</text>
+<text x="300" y="290" font-size="7">wr_sel=1→rd</text>
+<text x="300" y="318" font-size="7">wr_sel=0→$ra</text>
+
+<!-- EXT -->
+<rect x="380" y="240" width="150" height="115" rx="5" fill="#f9fafb" stroke="#111" stroke-width="1.8"/>
+<text x="455" y="264" text-anchor="middle" font-size="13" font-weight="bold">EXT (SEXT)</text>
+<line x1="393" y1="270" x2="517" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="388" y="286" font-size="9">← imm[25:0]=inst[25:0]</text>
+<text x="388" y="302" font-size="9">← op[2:0]=ext_op</text>
+<text x="485" y="286" font-size="9">→ ext[31:0]</text>
+<text x="388" y="322" font-size="7" fill="#888">内部按 op 裁切扩展</text>
+<text x="388" y="336" font-size="7" fill="#888">输出广播到3个地方</text>
+
+<!-- ALU + MUXes A/B -->
+<rect x="585" y="240" width="180" height="115" rx="5" fill="#f9fafb" stroke="#111" stroke-width="2"/>
+<text x="675" y="264" text-anchor="middle" font-size="13" font-weight="bold">ALU</text>
+<line x1="598" y1="270" x2="752" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="592" y="286" font-size="9">← a[31:0]（来自MUX-A）</text>
+<text x="592" y="302" font-size="9">← b[31:0]（来自MUX-B）</text>
+<text x="592" y="318" font-size="9">← op[4:0]=alu_op</text>
+<text x="720" y="286" font-size="9">→ c[31:0]（运算结果）</text>
+<text x="720" y="302" font-size="9">→ br（1位，分支条件）</text>
+
+<!-- ALU-A MUX -->
+<polygon points="560,325 574,340 560,355 546,340" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="578" y="337" font-size="8">MUX-A</text>
+<text x="535" y="318" font-size="7">RF.rD1(R1通道)</text>
+<text x="535" y="358" font-size="7">PC.pc(PC通道)</text>
+<text x="576" y="325" font-size="7">alua_sel</text>
+<text x="576" y="355" font-size="7">1=R1,0=PC</text>
+
+<!-- ALU-B MUX -->
+<polygon points="560,385 574,400 560,415 546,400" fill="#fff" stroke="#111" stroke-width="1.5"/>
+<text x="578" y="397" font-size="8">MUX-B</text>
+<text x="535" y="378" font-size="7">EXT.ext(EXT通道)</text>
+<text x="535" y="418" font-size="7">RF.rD2(R2通道)</text>
+<text x="576" y="385" font-size="7">alub_sel</text>
+<text x="576" y="415" font-size="7">0=EXT,1=R2</text>
+
+<!-- MREQ -->
+<rect x="820" y="240" width="140" height="115" rx="5" fill="#f9fafb" stroke="#111" stroke-width="1.8"/>
+<text x="890" y="264" text-anchor="middle" font-size="13" font-weight="bold">MREQ</text>
+<line x1="833" y1="270" x2="947" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="828" y="286" font-size="9">← addr=ALU.c</text>
+<text x="828" y="302" font-size="9">← wdata=RF.rD2</text>
+<text x="828" y="318" font-size="9">← rop=ram_r_op</text>
+<text x="828" y="334" font-size="9">← wop=ram_w_op</text>
+<text x="928" y="286" font-size="9">→ ren[3:0]</text>
+<text x="928" y="302" font-size="9">→ wen[3:0]</text>
+<text x="928" y="318" font-size="9">→ addr</text>
+<text x="928" y="334" font-size="9">→ wdata</text>
+
+<!-- MEXT -->
+<rect x="1015" y="240" width="145" height="115" rx="5" fill="#f9fafb" stroke="#111" stroke-width="1.8"/>
+<text x="1087" y="264" text-anchor="middle" font-size="13" font-weight="bold">MEXT</text>
+<line x1="1028" y1="270" x2="1147" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="1022" y="286" font-size="9">← din=Data_RAM.rdata</text>
+<text x="1022" y="302" font-size="9">← op=ram_r_op</text>
+<text x="1022" y="318" font-size="9">← offs=addr[1:0]</text>
+<text x="1120" y="290" font-size="9">→ ext[31:0]</text>
+<text x="1022" y="338" font-size="7" fill="#888">输出→WB-MUX(RAM)</text>
+
+<!-- ================================================================== -->
+<!-- Row3: NPC, WB-MUX, Data_RAM  y=460-575 -->
+<!-- ================================================================== -->
+
+<!-- NPC -->
+<rect x="25" y="460" width="145" height="110" rx="5" fill="#f9fafb" stroke="#111" stroke-width="1.8"/>
+<text x="97" y="484" text-anchor="middle" font-size="13" font-weight="bold">NPC</text>
+<line x1="38" y1="490" x2="157" y2="490" stroke="#ddd" stroke-width="0.5"/>
+<text x="32" y="506" font-size="9">← pc（来自PC.pc）</text>
+<text x="32" y="522" font-size="9">← offset（来自EXT.ext）</text>
+<text x="32" y="538" font-size="9">← br（来自ALU.br）</text>
+<text x="32" y="554" font-size="9">← op=npc_op</text>
+<text x="120" y="506" font-size="9">→ npc（32位）→PC</text>
+<text x="120" y="522" font-size="9">→ pc4（32位）→WB-MUX</text>
+<text x="60" y="562" font-size="7" fill="#888">内部 case 四选一</text>
+
+<!-- WB-MUX -->
+<polygon points="510,505 530,525 510,545 490,525" fill="#fff" stroke="#111" stroke-width="2"/>
+<text x="513" y="522" font-size="9" font-weight="bold">WB-MUX</text>
+<text x="480" y="500" font-size="7">ALU.c→</text>
+<text x="540" y="510" font-size="7">→RF.wD</text>
+<text x="480" y="535" font-size="7">MEXT.ext→</text>
+<text x="480" y="520" font-size="7">EXT.ext→</text>
+<text x="480" y="548" font-size="7">NPC.pc4→</text>
+<text x="515" y="555" font-size="7">rf_wsel[1:0]控制</text>
+
+<!-- Data_RAM 虚线 -->
+<rect x="740" y="460" width="180" height="110" rx="5" fill="#fafafa" stroke="#111" stroke-width="1.8" stroke-dasharray="8,4"/>
+<text x="830" y="484" text-anchor="middle" font-size="13" font-weight="bold">Data_RAM</text>
+<line x1="753" y1="490" x2="907" y2="490" stroke="#ddd" stroke-width="0.5" stroke-dasharray="4,2"/>
+<text x="748" y="506" font-size="9">← addr（来自MREQ）</text>
+<text x="748" y="522" font-size="9">← wdata（来自MREQ）</text>
+<text x="748" y="538" font-size="9">← ren[3:0] wen[3:0]</text>
+<text x="888" y="510" font-size="9">→ rdata（32位）</text>
+<text x="880" y="528" font-size="9">→ MEXT.din</text>
+<text x="765" y="562" font-size="7" fill="#888">虚线 = 片外存储</text>
+
+<!-- ================================================================ -->
+<!-- 连接简称标注 -->
+<!-- ================================================================ -->
+<text x="530" y="610" font-size="10" font-weight="bold" fill="#333">模块输入输出端口 & MUX 数据选择关系</text>
+<text x="25" y="630" font-size="9" fill="#555">每个模块: 左侧 = 输入端口 + 来源 | 右侧 = 输出端口 + 去向 | 三角 = MUX + 控制信号</text>
+
+<!-- ====== 底部速查表 ====== -->
+<line x1="0" y1="650" x2="1600" y2="650" stroke="#ccc" stroke-width="0.5"/>
+
+<text x="25" y="672" font-size="11" font-weight="bold">MUX 速查表</text>
+<rect x="25" y="682" width="1550" height="20" fill="#f1f5f9" stroke="#000" stroke-width="1"/>
+<text x="40" y="697" font-size="9" font-weight="bold">MUX 名称</text>
+<text x="180" y="697" font-size="9" font-weight="bold">位置</text>
+<text x="260" y="697" font-size="9" font-weight="bold">控制信号</text>
+<text x="400" y="697" font-size="9" font-weight="bold">输入 A</text>
+<text x="550" y="697" font-size="9" font-weight="bold">A 来源</text>
+<text x="700" y="697" font-size="9" font-weight="bold">输入 B</text>
+<text x="850" y="697" font-size="9" font-weight="bold">B 来源</text>
+<text x="1000" y="697" font-size="9" font-weight="bold">输出到</text>
+<text x="1150" y="697" font-size="9" font-weight="bold">A 选的条件</text>
+<text x="1350" y="697" font-size="9" font-weight="bold">B 选的条件</text>
+
+<g font-size="8">
+  <rect x="25" y="703" width="1550" height="16" fill="#fff"/>
+  <text x="40" y="715">r2_sel MUX</text><text x="180" y="715">RF 左 rR2 前</text><text x="260" y="715">r2_sel</text>
+  <text x="400" y="715">inst[14:10]（rk）</text><text x="550" y="715">inst 寄存器字段</text>
+  <text x="700" y="715">inst[4:0]（rd）</text><text x="850" y="715">inst 寄存器字段</text>
+  <text x="1000" y="715">RF.rR2</text><text x="1150" y="715">r2_sel=1（3R型：add.w/xor等）</text><text x="1350" y="715">r2_sel=0（分支beq/store）</text>
+
+  <rect x="25" y="720" width="1550" height="16" fill="#fafafa"/>
+  <text x="40" y="732">wr_sel MUX</text><text x="180" y="732">RF 左 wR 前</text><text x="260" y="732">wr_sel</text>
+  <text x="400" y="732">inst[4:0]（rd）</text><text x="550" y="732">inst 寄存器字段</text>
+  <text x="700" y="732">5'h1（$ra）</text><text x="850" y="732">硬件常数（br: GND×4+VCC）</text>
+  <text x="1000" y="732">RF.wR</text><text x="1150" y="732">wr_sel=1（绝大多数：addi/ld等）</text><text x="1350" y="732">wr_sel=0（只有bl）</text>
+
+  <rect x="25" y="737" width="1550" height="16" fill="#fff"/>
+  <text x="40" y="749">MUX-A</text><text x="180" y="749">ALU 左 a 前</text><text x="260" y="749">alua_sel</text>
+  <text x="400" y="749">RF.rD1（R1）</text><text x="550" y="749">RF 读出的寄存器值</text>
+  <text x="700" y="749">PC.pc（PC）</text><text x="850" y="749">PC 模块当前地址</text>
+  <text x="1000" y="749">ALU.a</text><text x="1150" y="749">alua_sel=1（大多数指令）</text><text x="1350" y="749">alua_sel=0（pcaddu12i/bl）</text>
+
+  <rect x="25" y="754" width="1550" height="16" fill="#fafafa"/>
+  <text x="40" y="766">MUX-B</text><text x="180" y="766">ALU 左 b 前</text><text x="260" y="766">alub_sel</text>
+  <text x="400" y="766">EXT.ext</text><text x="550" y="766">EXT 扩展后的立即数</text>
+  <text x="700" y="766">RF.rD2</text><text x="850" y="766">RF 读出的寄存器值</text>
+  <text x="1000" y="766">ALU.b</text><text x="1150" y="766">alub_sel=0（有立即数：addi/ld等）</text><text x="1350" y="766">alub_sel=1（纯寄存器：add.w/xor/beq）</text>
+
+  <rect x="25" y="771" width="1550" height="16" fill="#fff"/>
+  <text x="40" y="783">WB-MUX</text><text x="180" y="783">RF 底部 wD 前</text><text x="260" y="783">rf_wsel[1:0]</text>
+  <text x="400" y="783">4路输入</text><text x="550" y="783">ALU.c / MEXT.ext / EXT.ext / NPC.pc4</text>
+  <text x="700" y="783">—</text><text x="850" y="783">—</text>
+  <text x="1000" y="783">RF.wD</text><text x="1150" y="783">00=PC4(jirl/bl) 01=RAM(load) 10=EXT(lu12i.w) 11=ALU(大多数)</text>
+</g>
+
+</svg></body></html>

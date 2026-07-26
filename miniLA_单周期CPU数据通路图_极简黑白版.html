@@ -1,0 +1,372 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>miniLA CPU 数据通路图</title>
+<style>*{margin:0;padding:0}body{background:#f5f5f5;display:flex;justify-content:center;padding:12px;font-family:'Courier New',monospace}</style></head><body>
+<svg viewBox="0 0 1400 800" width="1400" height="800" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <pattern id="g" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M20 0L0 0 0 20" fill="none" stroke="#e0e0e0" stroke-width="0.35"/>
+  </pattern>
+  <marker id="a2" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0,0 7,2.5 0,5" fill="#222"/></marker>
+  <marker id="a1" markerWidth="6" markerHeight="4" refX="6" refY="2" orient="auto"><polygon points="0,0 6,2 0,4" fill="#222"/></marker>
+</defs>
+<rect x="0" y="0" width="1400" height="800" fill="url(#g)"/>
+
+<!-- ====== Row1 y=70-170: IF/ID ====== -->
+<!-- PC x=40 w=120 h=100 -->
+<rect x="40" y="70" width="120" height="100" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="100" y="94" text-anchor="middle" font-size="12" font-weight="bold">PC</text>
+<line x1="55" y1="100" x2="145" y2="100" stroke="#ddd" stroke-width="0.5"/>
+<text x="48" y="116" font-size="9">clk rst</text><text x="48" y="132" font-size="9">fetch npc</text>
+<text x="115" y="116" font-size="9">→ pc</text><text x="115" y="132" font-size="9">→ if_req</text>
+<text x="48" y="155" font-size="7" fill="#888">时序▣</text>
+
+<!-- Inst_ROM x=215 w=150 h=100 虚线 -->
+<rect x="215" y="70" width="150" height="100" fill="#fff" stroke="#222" stroke-width="1.5" stroke-dasharray="7,4"/>
+<text x="290" y="94" text-anchor="middle" font-size="12" font-weight="bold">Inst_ROM</text>
+<line x1="230" y1="100" x2="350" y2="100" stroke="#ddd" stroke-width="0.5" stroke-dasharray="4,2"/>
+<text x="223" y="116" font-size="9">addr[31:0]</text><text x="223" y="132" font-size="9">if_valid</text>
+<text x="320" y="116" font-size="9">→ inst</text>
+<text x="245" y="160" font-size="7" fill="#888">片外指令存储器</text>
+
+<!-- Controller x=425 w=230 h=100 -->
+<rect x="425" y="70" width="230" height="100" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="540" y="94" text-anchor="middle" font-size="12" font-weight="bold">Controller</text>
+<line x1="440" y1="100" x2="640" y2="100" stroke="#ddd" stroke-width="0.5"/>
+<text x="433" y="116" font-size="9">inst[31:15]</text>
+<text x="580" y="116" font-size="9">→ npc_op[1:0]</text>
+<text x="580" y="130" font-size="9">→ ext_op[2:0]</text>
+<text x="580" y="144" font-size="9">→ alu_op[4:0]</text>
+<text x="580" y="158" font-size="9">→ alua_sel alub_sel r2_sel</text>
+<text x="433" y="130" font-size="7" fill="#888">组合□</text>
+
+<!-- ====== Row2 y=240-340: ID/EX ====== -->
+<!-- RF x=160 w=170 h=100 -->
+<rect x="160" y="240" width="170" height="100" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="245" y="264" text-anchor="middle" font-size="12" font-weight="bold">RF (32×32)</text>
+<line x1="175" y1="270" x2="315" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="168" y="286" font-size="9">clk we rR1 rR2</text><text x="168" y="302" font-size="9">wR[4:0] wD[31:0]</text>
+<text x="290" y="286" font-size="9">→ rD1</text><text x="290" y="302" font-size="9">→ rD2</text>
+
+<!-- EXT x=385 w=140 h=100 -->
+<rect x="385" y="240" width="140" height="100" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<text x="455" y="264" text-anchor="middle" font-size="12" font-weight="bold">EXT (SEXT)</text>
+<line x1="400" y1="270" x2="510" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="393" y="286" font-size="9">imm[25:0]</text><text x="393" y="302" font-size="9">op[2:0]</text>
+<text x="485" y="286" font-size="9">→ ext</text>
+
+<!-- ALU x=580 w=180 h=100 -->
+<rect x="580" y="240" width="180" height="100" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="670" y="264" text-anchor="middle" font-size="12" font-weight="bold">ALU</text>
+<line x1="595" y1="270" x2="745" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="588" y="286" font-size="9">a[31:0]</text><text x="588" y="302" font-size="9">b[31:0]</text><text x="588" y="318" font-size="9">op[4:0]</text>
+<text x="715" y="286" font-size="9">→ c</text><text x="715" y="302" font-size="9">→ br</text>
+
+<!-- MREQ x=815 w=130 h=100 -->
+<rect x="815" y="240" width="130" height="100" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<text x="880" y="264" text-anchor="middle" font-size="12" font-weight="bold">MREQ</text>
+<line x1="830" y1="270" x2="930" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="823" y="286" font-size="9">addr wdata</text><text x="823" y="302" font-size="9">rop[2:0]</text><text x="823" y="318" font-size="9">wop[3:0]</text>
+<text x="910" y="286" font-size="9">→ ren wen</text><text x="910" y="302" font-size="9">→ addr wdata</text>
+
+<!-- MEXT x=1000 w=145 h=100 -->
+<rect x="1000" y="240" width="145" height="100" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<text x="1072" y="264" text-anchor="middle" font-size="12" font-weight="bold">MEXT</text>
+<line x1="1015" y1="270" x2="1130" y2="270" stroke="#ddd" stroke-width="0.5"/>
+<text x="1008" y="286" font-size="9">din op offs</text>
+<text x="1115" y="286" font-size="9">→ ext</text>
+
+<!-- ====== Row3 y=430-530 ====== -->
+<!-- NPC x=40 w=120 h=100 -->
+<rect x="40" y="430" width="120" height="100" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<text x="100" y="454" text-anchor="middle" font-size="12" font-weight="bold">NPC</text>
+<line x1="55" y1="460" x2="145" y2="460" stroke="#ddd" stroke-width="0.5"/>
+<text x="48" y="476" font-size="9">pc offset</text><text x="48" y="492" font-size="9">br op[1:0]</text><text x="48" y="508" font-size="9">jr_target</text>
+<text x="115" y="476" font-size="9">→ npc</text><text x="115" y="492" font-size="9">→ pc4</text>
+
+<!-- Data_RAM x=815 w=160 h=100 虚线 -->
+<rect x="815" y="430" width="160" height="100" fill="#fff" stroke="#222" stroke-width="1.5" stroke-dasharray="7,4"/>
+<text x="895" y="454" text-anchor="middle" font-size="12" font-weight="bold">Data_RAM</text>
+<line x1="830" y1="460" x2="960" y2="460" stroke="#ddd" stroke-width="0.5" stroke-dasharray="4,2"/>
+<text x="823" y="476" font-size="9">addr wdata</text><text x="823" y="492" font-size="9">ren[3:0] wen[3:0]</text>
+<text x="935" y="476" font-size="9">→ rdata</text>
+<text x="845" y="520" font-size="7" fill="#888">片外数据存储器</text>
+
+<!-- ====== MUX 菱形 (统一18x16) ====== -->
+<!-- ALU-A-MUX -->
+<polygon points="548,320 563,336 548,352 533,336" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<text x="550" y="333" font-size="7">MUX</text>
+<!-- ALU-B-MUX -->
+<polygon points="548,368 563,384 548,400 533,384" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<text x="550" y="381" font-size="7">MUX</text>
+<!-- r2-MUX -->
+<polygon points="293,318 308,334 293,350 278,334" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<text x="295" y="331" font-size="7">MUX</text>
+<!-- WB-MUX -->
+<polygon points="500,478 518,496 500,514 482,496" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<text x="503" y="493" font-size="7">MUX</text>
+<text x="503" y="505" font-size="6" fill="#555">rf_wsel</text>
+
+<!-- ================================================================ -->
+<!-- 数据连线 (粗2.5px=32位数据, 细1.5px=1位) 全部横平竖直 -->
+<!-- ================================================================ -->
+
+<!-- PC→Inst_ROM -->
+<line x1="160" y1="116" x2="210" y2="116" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="175" y="108" font-size="8">32</text>
+
+<!-- PC.pc→NPC -->
+<line x1="100" y1="170" x2="100" y2="425" stroke="#222" stroke-width="1.5" marker-end="url(#a1)"/>
+<text x="92" y="305" font-size="8">32</text>
+
+<!-- PC.pc→ALU-A-MUX (pcaddu12i) -->
+<line x1="160" y1="140" x2="190" y2="140" stroke="#222" stroke-width="1.2"/>
+<line x1="190" y1="140" x2="190" y2="210" stroke="#222" stroke-width="1.2"/>
+<line x1="190" y1="210" x2="533" y2="336" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="350" y="203" font-size="7">pc (pcaddu12i/bl)</text>
+
+<!-- Inst_ROM.inst→Controller -->
+<line x1="365" y1="116" x2="420" y2="116" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="385" y="108" font-size="8">32</text>
+
+<!-- inst→RF (从Inst_ROM下170→RF右245上240) -->
+<line x1="290" y1="170" x2="290" y2="205" stroke="#222" stroke-width="1.2"/>
+<line x1="290" y1="205" x2="245" y2="205" stroke="#222" stroke-width="1.2"/>
+<line x1="245" y1="205" x2="245" y2="235" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="220" y="199" font-size="7">inst[9:5][14:10][4:0]</text>
+
+<!-- inst→EXT -->
+<line x1="330" y1="170" x2="330" y2="220" stroke="#222" stroke-width="1.2"/>
+<line x1="330" y1="220" x2="455" y2="220" stroke="#222" stroke-width="1.2"/>
+<line x1="455" y1="220" x2="455" y2="235" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="380" y="214" font-size="7">inst[25:0]</text>
+
+<!-- RF.rD1→ALU-A-MUX -->
+<line x1="330" y1="286" x2="548" y2="336" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="425" y="305" font-size="8">32 rD1</text>
+
+<!-- RF.rD2→r2-MUX -->
+<line x1="330" y1="302" x2="293" y2="334" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="305" y="315" font-size="8">32</text>
+
+<!-- r2-MUX→ALU-B-MUX -->
+<line x1="308" y1="334" x2="548" y2="384" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="420" y="353" font-size="8">32 rD2</text>
+
+<!-- RF.rD2→MREQ.wdata (store数据通路) -->
+<line x1="330" y1="315" x2="360" y2="315" stroke="#222" stroke-width="1.5"/>
+<line x1="360" y1="315" x2="360" y2="560" stroke="#222" stroke-width="1.5"/>
+<line x1="360" y1="560" x2="830" y2="560" stroke="#222" stroke-width="1.5"/>
+<line x1="830" y1="560" x2="830" y2="302" stroke="#222" stroke-width="1.5" marker-end="url(#a1)"/>
+<text x="580" y="553" font-size="8">32 (store wdata)</text>
+
+<!-- EXT.ext→ALU-B-MUX -->
+<line x1="525" y1="286" x2="548" y2="384" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="538" y="330" font-size="8">32 ext</text>
+
+<!-- EXT.ext→NPC.offset -->
+<line x1="455" y1="340" x2="455" y2="600" stroke="#222" stroke-width="1.2"/>
+<line x1="455" y1="600" x2="160" y2="600" stroke="#222" stroke-width="1.2"/>
+<line x1="160" y1="600" x2="160" y2="476" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="300" y="593" font-size="8">32 offset</text>
+
+<!-- EXT.ext→WB-MUX (lu12i.w) -->
+<line x1="455" y1="340" x2="455" y2="625" stroke="#222" stroke-width="1.2"/>
+<line x1="455" y1="625" x2="490" y2="625" stroke="#222" stroke-width="1.2"/>
+<line x1="490" y1="625" x2="490" y2="501" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="470" y="618" font-size="7">32 (lu12i.w)</text>
+
+<!-- ALU-A-MUX→ALU.a -->
+<line x1="563" y1="336" x2="580" y2="336" stroke="#222" stroke-width="2"/>
+<line x1="580" y1="336" x2="580" y2="286" stroke="#222" stroke-width="2" marker-end="url(#a2)"/>
+
+<!-- ALU-B-MUX→ALU.b -->
+<line x1="563" y1="384" x2="610" y2="384" stroke="#222" stroke-width="2"/>
+<line x1="610" y1="384" x2="610" y2="302" stroke="#222" stroke-width="2" marker-end="url(#a2)"/>
+
+<!-- ALU.c→MREQ.addr -->
+<line x1="760" y1="286" x2="810" y2="286" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="778" y="278" font-size="8">32</text>
+
+<!-- ALU.c→WB-MUX -->
+<line x1="670" y1="340" x2="670" y2="385" stroke="#222" stroke-width="2.5"/>
+<line x1="670" y1="385" x2="518" y2="385" stroke="#222" stroke-width="2.5"/>
+<line x1="518" y1="385" x2="518" y2="473" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="590" y="378" font-size="8">32 c</text>
+
+<!-- ALU.br→NPC -->
+<line x1="760" y1="302" x2="790" y2="302" stroke="#222" stroke-width="1.2"/>
+<line x1="790" y1="302" x2="790" y2="490" stroke="#222" stroke-width="1.2"/>
+<line x1="790" y1="490" x2="165" y2="490" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="470" y="483" font-size="8">1 br</text>
+
+<!-- NPC.npc→PC (左边绕回) -->
+<line x1="40" y1="490" x2="15" y2="490" stroke="#222" stroke-width="2.5"/>
+<line x1="15" y1="490" x2="15" y2="116" stroke="#222" stroke-width="2.5"/>
+<line x1="15" y1="116" x2="35" y2="116" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="8" y="310" font-size="8">npc</text>
+
+<!-- NPC.pc4→WB-MUX -->
+<line x1="160" y1="492" x2="195" y2="492" stroke="#222" stroke-width="2"/>
+<line x1="195" y1="492" x2="195" y2="650" stroke="#222" stroke-width="2"/>
+<line x1="195" y1="650" x2="485" y2="650" stroke="#222" stroke-width="2"/>
+<line x1="485" y1="650" x2="485" y2="501" stroke="#222" stroke-width="2" marker-end="url(#a2)"/>
+<text x="330" y="643" font-size="8">32 pc+4</text>
+
+<!-- MREQ→Data_RAM -->
+<line x1="880" y1="340" x2="880" y2="425" stroke="#222" stroke-width="1.5" marker-end="url(#a1)"/>
+<text x="888" y="388" font-size="8">ren wen addr wdata</text>
+
+<!-- Data_RAM.rdata→MEXT.din -->
+<line x1="975" y1="480" x2="1020" y2="480" stroke="#222" stroke-width="2"/>
+<line x1="1020" y1="480" x2="1020" y2="345" stroke="#222" stroke-width="2" marker-end="url(#a2)"/>
+<text x="1012" y="418" font-size="8">32</text>
+
+<!-- MEXT.ext→WB-MUX -->
+<line x1="1145" y1="286" x2="1175" y2="286" stroke="#222" stroke-width="2"/>
+<line x1="1175" y1="286" x2="1175" y2="660" stroke="#222" stroke-width="2"/>
+<line x1="1175" y1="660" x2="510" y2="660" stroke="#222" stroke-width="2"/>
+<line x1="510" y1="660" x2="510" y2="501" stroke="#222" stroke-width="2" marker-end="url(#a2)"/>
+<text x="830" y="653" font-size="8">32 ext</text>
+
+<!-- WB-MUX→RF.wD (顶部绕回) -->
+<line x1="518" y1="496" x2="555" y2="496" stroke="#222" stroke-width="2.5"/>
+<line x1="555" y1="496" x2="555" y2="30" stroke="#222" stroke-width="2.5"/>
+<line x1="555" y1="30" x2="245" y2="30" stroke="#222" stroke-width="2.5"/>
+<line x1="245" y1="30" x2="245" y2="235" stroke="#222" stroke-width="2.5" marker-end="url(#a2)"/>
+<text x="390" y="23" font-size="8">32 wD</text>
+
+<!-- ================================================================ -->
+<!-- 控制信号 (细线1.2px, 从Controller走控制总线y=195, 分到各模块) -->
+<!-- ================================================================ -->
+<line x1="425" y1="195" x2="1200" y2="195" stroke="#eee" stroke-width="1" stroke-dasharray="2,4"/>
+
+<!-- npc_op→NPC -->
+<line x1="425" y1="116" x2="172" y2="116" stroke="#222" stroke-width="1.2"/>
+<line x1="172" y1="116" x2="172" y2="476" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="240" y="110" font-size="8">npc_op[1:0]</text>
+
+<!-- ext_op→EXT -->
+<line x1="425" y1="130" x2="395" y2="130" stroke="#222" stroke-width="1.2"/>
+<line x1="395" y1="130" x2="395" y2="210" stroke="#222" stroke-width="1.2"/>
+<line x1="395" y1="210" x2="455" y2="210" stroke="#222" stroke-width="1.2"/>
+<line x1="455" y1="210" x2="455" y2="235" stroke="#222" stroke-width="1.2"/>
+<text x="405" y="178" font-size="7">ext_op[2:0]</text>
+
+<!-- alu_op→ALU -->
+<line x1="655" y1="144" x2="655" y2="195" stroke="#222" stroke-width="1.2"/>
+<line x1="655" y1="195" x2="660" y2="195" stroke="#222" stroke-width="1.2"/>
+<line x1="660" y1="195" x2="660" y2="315" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="645" y="260" font-size="8">alu_op[4:0]</text>
+
+<!-- alua_sel→ALU-A-MUX -->
+<line x1="655" y1="158" x2="555" y2="158" stroke="#222" stroke-width="1.2"/>
+<line x1="555" y1="158" x2="555" y2="333" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="590" y="152" font-size="7">alua_sel</text>
+
+<!-- alub_sel→ALU-B-MUX -->
+<line x1="655" y1="164" x2="560" y2="164" stroke="#222" stroke-width="1.2"/>
+<line x1="560" y1="164" x2="560" y2="381" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="580" y="275" font-size="7">alub_sel</text>
+
+<!-- r2_sel→r2-MUX -->
+<line x1="425" y1="144" x2="288" y2="144" stroke="#222" stroke-width="1.2"/>
+<line x1="288" y1="144" x2="288" y2="330" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="335" y="138" font-size="7">r2_sel</text>
+
+<!-- ram_r_op→MREQ+MEXT -->
+<line x1="655" y1="170" x2="820" y2="170" stroke="#222" stroke-width="1.2"/>
+<line x1="820" y1="170" x2="820" y2="302" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<line x1="820" y1="170" x2="1000" y2="170" stroke="#222" stroke-width="1.2"/>
+<line x1="1000" y1="170" x2="1000" y2="302" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="890" y="164" font-size="8">ram_r_op[2:0]</text>
+
+<!-- ram_w_op→MREQ -->
+<line x1="425" y1="158" x2="405" y2="158" stroke="#222" stroke-width="1.2"/>
+<line x1="405" y1="158" x2="405" y2="205" stroke="#222" stroke-width="1.2"/>
+<line x1="405" y1="205" x2="850" y2="205" stroke="#222" stroke-width="1.2"/>
+<line x1="850" y1="205" x2="850" y2="315" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="610" y="199" font-size="8">ram_w_op[3:0]</text>
+
+<!-- rf_we→RF -->
+<line x1="425" y1="170" x2="345" y2="170" stroke="#222" stroke-width="1.2"/>
+<line x1="345" y1="170" x2="345" y2="302" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="355" y="240" font-size="7">rf_we wr_sel</text>
+
+<!-- rf_wsel→WB-MUX -->
+<line x1="655" y1="182" x2="508" y2="182" stroke="#222" stroke-width="1.2"/>
+<line x1="508" y1="182" x2="508" y2="473" stroke="#222" stroke-width="1.2" marker-end="url(#a1)"/>
+<text x="555" y="176" font-size="7">rf_wsel</text>
+
+<!-- ================================================================ -->
+<!-- 底部控制信号表格 -->
+<!-- ================================================================ -->
+<line x1="0" y1="690" x2="1400" y2="690" stroke="#ccc" stroke-width="0.5"/>
+
+<rect x="30" y="702" width="1340" height="16" fill="#fafafa" stroke="#000" stroke-width="1"/>
+<text x="45" y="714" font-size="8" font-weight="bold">Signal[bits]</text>
+<text x="130" y="714" font-size="8" font-weight="bold">Target</text>
+<text x="210" y="714" font-size="8" font-weight="bold">addi.w</text>
+<text x="288" y="714" font-size="8" font-weight="bold">ld.w</text>
+<text x="360" y="714" font-size="8" font-weight="bold">st.w</text>
+<text x="432" y="714" font-size="8" font-weight="bold">beq</text>
+<text x="505" y="714" font-size="8" font-weight="bold">jirl</text>
+<text x="582" y="714" font-size="8" font-weight="bold">bl</text>
+<text x="653" y="714" font-size="8" font-weight="bold">b</text>
+<text x="722" y="714" font-size="8" font-weight="bold">lu12i.w</text>
+<text x="802" y="714" font-size="8" font-weight="bold">pcaddu12i</text>
+<text x="898" y="714" font-size="8" font-weight="bold">slt</text>
+<text x="960" y="714" font-size="8" font-weight="bold">sltui</text>
+<text x="1032" y="714" font-size="8" font-weight="bold">and/or/xor</text>
+<text x="1135" y="714" font-size="8" font-weight="bold">andi/ori/xori</text>
+<text x="1248" y="714" font-size="8" font-weight="bold">blt/bge/..</text>
+
+<g font-size="8">
+  <rect x="30" y="719" width="1340" height="12" fill="#fff" stroke="#eee" stroke-width="0.3"/>
+  <text x="45" y="728">npc_op[2]</text><text x="130" y="728">NPC</text>
+  <text x="210" y="728">PC4</text><text x="288" y="728">PC4</text><text x="360" y="728">PC4</text><text x="432" y="728">BRCH</text>
+  <text x="505" y="728">JR</text><text x="582" y="728">JMP</text><text x="653" y="728">JMP</text><text x="722" y="728">PC4</text>
+  <text x="802" y="728">PC4</text><text x="898" y="728">PC4</text><text x="960" y="728">PC4</text><text x="1032" y="728">PC4</text>
+  <text x="1135" y="728">PC4</text><text x="1248" y="728">BRCH</text>
+
+  <rect x="30" y="732" width="1340" height="12" fill="#fafafa" stroke="#eee" stroke-width="0.3"/>
+  <text x="45" y="741">ext_op[3]</text><text x="130" y="741">EXT</text>
+  <text x="210" y="741">12</text><text x="288" y="741">12</text><text x="360" y="741">12</text><text x="432" y="741">16</text>
+  <text x="505" y="741">16</text><text x="582" y="741">26</text><text x="653" y="741">26</text><text x="722" y="741">20</text>
+  <text x="802" y="741">20</text><text x="898" y="741">—</text><text x="960" y="741" font-weight="bold">12</text><text x="1032" y="741">—</text>
+  <text x="1135" y="741">12U</text><text x="1248" y="741">16</text>
+
+  <rect x="30" y="745" width="1340" height="12" fill="#fff" stroke="#eee" stroke-width="0.3"/>
+  <text x="45" y="754">alua_sel[1]</text><text x="130" y="754">MUX-A</text>
+  <text x="210" y="754">R1</text><text x="288" y="754">R1</text><text x="360" y="754">R1</text><text x="432" y="754">R1</text>
+  <text x="505" y="754" font-weight="bold">R1</text><text x="582" y="754">PC</text><text x="653" y="754">—</text><text x="722" y="754">—</text>
+  <text x="802" y="754">PC</text><text x="898" y="754">R1</text><text x="960" y="754">R1</text><text x="1032" y="754">R1</text>
+  <text x="1135" y="754">R1</text><text x="1248" y="754">R1</text>
+
+  <rect x="30" y="758" width="1340" height="12" fill="#fafafa" stroke="#eee" stroke-width="0.3"/>
+  <text x="45" y="767">alub_sel[1]</text><text x="130" y="767">MUX-B</text>
+  <text x="210" y="767">EXT</text><text x="288" y="767">EXT</text><text x="360" y="767">EXT</text><text x="432" y="767">R2</text>
+  <text x="505" y="767">EXT</text><text x="582" y="767">—</text><text x="653" y="767">—</text><text x="722" y="767">—</text>
+  <text x="802" y="767">EXT</text><text x="898" y="767">R2</text><text x="960" y="767">EXT</text><text x="1032" y="767">R2</text>
+  <text x="1135" y="767">EXT</text><text x="1248" y="767">R2</text>
+
+  <rect x="30" y="771" width="1340" height="12" fill="#fff" stroke="#eee" stroke-width="0.3"/>
+  <text x="45" y="780">alu_op[5]</text><text x="130" y="780">ALU</text>
+  <text x="210" y="780">ADD</text><text x="288" y="780">ADD</text><text x="360" y="780">ADD</text><text x="432" y="780">BEQ</text>
+  <text x="505" y="780">ADD</text><text x="582" y="780">ADD</text><text x="653" y="780">—</text><text x="722" y="780">—</text>
+  <text x="802" y="780">ADD</text><text x="898" y="780">SLT</text><text x="960" y="780">SLTU</text><text x="1032" y="780">AND/OR/XOR</text>
+  <text x="1135" y="780">AND/OR/XOR</text><text x="1248" y="780">BLT/BGE/..</text>
+
+  <rect x="30" y="784" width="1340" height="12" fill="#fafafa" stroke="#eee" stroke-width="0.3"/>
+  <text x="45" y="793">rf_we[1]</text><text x="130" y="793">RF</text>
+  <text x="210" y="793">1</text><text x="288" y="793">1</text><text x="360" y="793">0</text><text x="432" y="793">0</text>
+  <text x="505" y="793">1</text><text x="582" y="793">1</text><text x="653" y="793">0</text><text x="722" y="793">1</text>
+  <text x="802" y="793">1</text><text x="898" y="793">1</text><text x="960" y="793">1</text><text x="1032" y="793">1</text>
+  <text x="1135" y="793">1</text><text x="1248" y="793">0</text>
+
+  <rect x="30" y="797" width="1340" height="12" fill="#fff" stroke="#eee" stroke-width="0.3"/>
+  <text x="45" y="806">rf_wsel[2]</text><text x="130" y="806">WB-MUX</text>
+  <text x="210" y="806">ALU</text><text x="288" y="806">RAM</text><text x="360" y="806">—</text><text x="432" y="806">—</text>
+  <text x="505" y="806" font-weight="bold">PC4</text><text x="582" y="806" font-weight="bold">PC4</text><text x="653" y="806">—</text><text x="722" y="806">EXT</text>
+  <text x="802" y="806">ALU</text><text x="898" y="806">ALU</text><text x="960" y="806">ALU</text><text x="1032" y="806">ALU</text>
+  <text x="1135" y="806">ALU</text><text x="1248" y="806">—</text>
+</g>
+</svg></body></html>

@@ -6,13 +6,11 @@ module cpu_core(
     input  wire         cpu_rst,
     input  wire         cpu_clk,
 
-    // Instruction Fetch Interface
     output wire         ifetch_req   /* verilator public */ ,
     output wire [31:0]  ifetch_addr  /* verilator public */ ,
     input  wire         ifetch_valid /* verilator public */ ,
     input  wire [31:0]  ifetch_inst,
-    
-    // Data Access Interface
+
     output reg  [ 3:0]  daccess_ren,
     output reg  [31:0]  daccess_addr,
     input  wire         daccess_rvalid,
@@ -22,80 +20,42 @@ module cpu_core(
     input  wire         daccess_wresp
 );
 
-    // PC and NPC
-    wire [31:0] pc;
-    wire [31:0] npc;
-    wire [31:0] pc4;
+    // ================================================================
+    // 全局流水线控制
+    // ================================================================
+    wire stall;           // load-use 冲突 → 暂停 IF 和 ID
+    wire flush;           // 分支预测失败 → 清空 IF/ID 和 ID/EX
+
+    // ================================================================
+    // IF 阶段 — 取指 + PC + NPC
+    // ================================================================
+    wire [31:0] pc, npc, pc4;
     wire [31:0] inst;
 
-    // Controller
-    wire [ 1:0] npc_op;
-    wire        is_jump;
-    wire [ 1:0] rf_wsel;
-    wire [ 2:0] ext_op;
-    wire [ 4:0] alu_op;
-    wire        alua_sel;
-    wire        alub_sel;
-    wire        r2_sel;
-    wire        wr_sel;
-    wire [ 2:0] ram_rop;
-    reg  [ 2:0] ram_rop_r;
-    wire [ 3:0] ram_wop;
-    reg         mul_div_flag;       // 乘除法运算的标志位信号
-
-    // 从 alu_op 推导: 乘除法指令需要多周期，不需要 Controller 单独输出
-    wire is_mul_div = (alu_op == `ALU_MUL ) | (alu_op == `ALU_MULH) | (alu_op == `ALU_MULHU)
-                    | (alu_op == `ALU_DIV ) | (alu_op == `ALU_MOD ) | (alu_op == `ALU_DIVU) | (alu_op == `ALU_MODU);
-
-    // Register File
-    wire [31:0] rf_rd1;
-    wire [31:0] rf_rd2;
-    wire        rf_we;
-    wire        rf_we1;
-    wire [ 4:0] rf_wR;
-    reg  [ 4:0] rf_wR_r;
-    wire [ 4:0] rf_wR1;
-    reg  [31:0] rf_wD;
-
-    // Immediate Extension
-    wire [31:0] ext;
-
-    // ALU
-    wire [31:0] alu_a;
-    wire [31:0] alu_b;
-    wire [31:0] alu_c;
-    reg  [31:0] alu_c_r;
-    wire        br;
-    wire        mul_div_busy;
-    
-    // Memory Access
-    wire [ 3:0] da_ren;
-    wire [31:0] da_addr;
-    wire [ 3:0] da_wen;
-    wire [31:0] da_wdata;
-    wire [31:0] ram_ext;
-    wire        is_ld_st;
-    reg         ld_st_flag;
-    wire        ld_st_done;         // 访存完成的标志位信号
-
-    wire        inst_finished;      // 指令执行完成的标志位信号
-    reg         inst_finished_r;
-
-    /***************************** IF *****************************/
     reg rst_r;
     wire first_req = rst_r & !cpu_rst;
     always @(posedge cpu_clk) rst_r <= cpu_rst;
 
-    // 复位信号发生边沿变化时首次取指; 当前指令执行完毕后取下一条指令
-    assign ifetch_req  = first_req | inst_finished_r;
+    // 取指: 流水线不暂停就一直取
+    wire if_stall = !ifetch_valid && !first_req;
+    assign ifetch_req  = first_req | !pipeline_stop;
     assign ifetch_addr = pc;
 
+    // NPC 在 IF 段: 用 EX 段的控制信号(分支在EX段解析)
+    // 分支预测: 静态预测不跳 → 默认 pc+4
+    // 分支实际跳转时, EX段的npc_op/br/offset/jr_target 产生正确npc
+    wire [ 1:0] ex_npc_op;
+    wire        ex_br;
+    wire [31:0] ex_alu_c;
+    wire [31:0] ex_ext;
+    wire [31:0] ex_pc;
+
     NPC U_NPC (
-        .op         (npc_op),
-        .pc         (pc),
-        .offset     (ext),
-        .br         (br),
-        .jr_target  (alu_c),
+        .op         (ex_npc_op),
+        .pc         (ex_pc),
+        .offset     (ex_ext),
+        .br         (ex_br),
+        .jr_target  (ex_alu_c),
         .npc        (npc),
         .pc4        (pc4)
     );
@@ -104,172 +64,408 @@ module cpu_core(
         .clk        (cpu_clk),
         .rst        (cpu_rst),
         .npc        (npc),
-        .fetch      (inst_finished),
+        .fetch      (!stall),
         .pc         (pc)
     );
 
-    /***************************** ID *****************************/
-    // 按照约定的时序，ifetch_inst只在ifetch_valid有效时有效，且它们仅有效1个时钟.
-    // 此处是为了避免ifetch_valid撤销后，ifetch_inst发生变化从而导致指令执行出错.
-    assign inst = ifetch_valid ? ifetch_inst : 32'h03400000 /* NOP */ ;
-    
+    // ================================================================
+    // IF/ID 流水线寄存器
+    // ================================================================
+    reg [31:0] IF_ID_inst;
+    reg [31:0] IF_ID_pc;
+    reg [31:0] IF_ID_pc4;
+    reg [31:0] if_pc_delayed;   // 上一拍的pc (指令被请求时的地址)
+
+    always @(posedge cpu_clk) if_pc_delayed <= pc;
+
+    always @(posedge cpu_clk or posedge cpu_rst) begin
+        if (cpu_rst) begin
+            IF_ID_inst <= 32'h00000000;
+            IF_ID_pc   <= 32'h0;
+            IF_ID_pc4  <= 32'h0;
+        end else if (flush) begin
+            // 分支预测失败: IF/ID 刷成 NOP
+            IF_ID_inst <= 32'h00000000;
+            IF_ID_pc   <= 32'h0;
+            IF_ID_pc4  <= 32'h0;
+        end else if (!stall) begin
+            IF_ID_inst <= ifetch_valid ? ifetch_inst : 32'h00000000;
+            IF_ID_pc   <= if_pc_delayed;   // 指令被请求时的PC, 不是当前PC!
+            IF_ID_pc4  <= if_pc_delayed + 32'h4;
+        end
+        // stall=1 时 IF/ID 保持不变
+    end
+
+    // ================================================================
+    // ID 阶段 — 译码 + 读寄存器 + 扩展立即数
+    // ================================================================
+    assign inst = IF_ID_inst;
+
+    wire [ 1:0] id_npc_op;
+    wire [ 2:0] id_ext_op;
+    wire        id_r2_sel;
+    wire        id_alua_sel;
+    wire        id_alub_sel;
+    wire [ 4:0] id_alu_op;
+    wire [ 2:0] id_ram_rop;
+    wire [ 3:0] id_ram_wop;
+    wire        id_rf_we;
+    wire        id_wr_sel;
+    wire [ 1:0] id_rf_wsel;
+
     Controller U_CU (
-        .inst_31_15     (inst[31:15]),
-        .npc_op         (npc_op),
-        .ext_op         (ext_op),
-        .r2_sel         (r2_sel),
-        .alua_sel       (alua_sel),
-        .alub_sel       (alub_sel),
-        .alu_op         (alu_op),
-        .ram_r_op       (ram_rop),
-        .ram_w_op       (ram_wop),
-        .rf_we          (rf_we),
-        .wr_sel         (wr_sel),
-        .rf_wsel        (rf_wsel)
+        .inst_31_15 (inst[31:15]),
+        .npc_op     (id_npc_op),
+        .ext_op     (id_ext_op),
+        .r2_sel     (id_r2_sel),
+        .alua_sel   (id_alua_sel),
+        .alub_sel   (id_alub_sel),
+        .alu_op     (id_alu_op),
+        .ram_r_op   (id_ram_rop),
+        .ram_w_op   (id_ram_wop),
+        .rf_we      (id_rf_we),
+        .wr_sel     (id_wr_sel),
+        .rf_wsel    (id_rf_wsel)
     );
 
+    wire [ 4:0] id_rs1, id_rs2, id_rd;
+    assign id_rs1 = inst[9:5];
+    assign id_rs2 = id_r2_sel ? inst[14:10] : inst[4:0];
+    // wr_sel: 1=rd(inst[4:0]), 0=r1($ra, bl指令)
+    assign id_rd  = id_rf_we ? (id_wr_sel ? inst[4:0] : 5'h1) : 5'h0;
+
+    wire [31:0] id_rD1, id_rD2;
     RF U_RF (
-        .clk        (cpu_clk),
-        .rR1        (inst[9:5]),
-        .rR2        (r2_sel ? inst[14:10] : inst[4:0]),
-        .rD1        (rf_rd1),
-        .rD2        (rf_rd2),
-        .we         (rf_we1),
-        .wR         (rf_wR1),
-        .wD         (rf_wD)
+        .clk  (cpu_clk),
+        .rR1  (id_rs1),
+        .rR2  (id_rs2),
+        .rD1  (id_rD1),
+        .rD2  (id_rD2),
+        .we   (MEM_WB_rf_we),
+        .wR   (MEM_WB_rd),
+        .wD   (wb_wD)
     );
 
+    wire [31:0] id_ext;
     EXT U_EXT (
-        .op         (ext_op),
-        .imm        (inst[25:0]),
-        .ext        (ext)
+        .op  (id_ext_op),
+        .imm (inst[25:0]),
+        .ext (id_ext)
     );
-    
-    // 遇到访存指令时, 拉高ld_st_flag标志位，表示正在执行访存指令
-    assign is_ld_st = (ram_rop != `RAM_EXT_N) | (ram_wop != `RAM_WE_N);
+
+    // 乘除法判断 (从 alu_op 推导)
+    wire id_is_mul_div = (id_alu_op == `ALU_MUL ) | (id_alu_op == `ALU_MULH) | (id_alu_op == `ALU_MULHU)
+                       | (id_alu_op == `ALU_DIV ) | (id_alu_op == `ALU_MOD ) | (id_alu_op == `ALU_DIVU) | (id_alu_op == `ALU_MODU);
+    wire id_is_ld_st   = (id_ram_rop != `RAM_EXT_N) | (id_ram_wop != `RAM_WE_N);
+
+    // ================================================================
+    // 流水线暂停
+    // 访存: 走到MEM段再停(EX段放行算地址)
+    // 乘除: 走到EX段再停(等ALU busy)
+    // ================================================================
+    reg pipeline_stop;
+    wire mem_waiting = (EX_MEM_ram_rop != `RAM_EXT_N || EX_MEM_ram_wop != `RAM_WE_N)
+                       && !daccess_rvalid && !daccess_wresp;
+    wire ex_mul_div_waiting = ID_EX_is_mul_div && mul_div_busy;
+
     always @(posedge cpu_clk or posedge cpu_rst) begin
-        if      (cpu_rst)    ld_st_flag <= 1'b0;
-        else if (is_ld_st)   ld_st_flag <= 1'b1;
-        else if (ld_st_done) ld_st_flag <= 1'b0;
+        if (cpu_rst)
+            pipeline_stop <= 1'b0;
+        else
+            pipeline_stop <= mem_waiting || ex_mul_div_waiting;
     end
 
-    // 遇到乘除法指令时，拉高mul_div_flag标志位，表示正在执行乘除法指令
+    assign stall = pipeline_stop | if_stall;
+    // stall 冻结 IF/ID(等待指令), pipeline_stop 冻结全流水线(等待访存/乘除)
+    wire id_bubble = if_stall | flush;  // IF没拿到指令 → ID/EX插NOP
+
+
+    // ================================================================
+    // ID/EX 流水线寄存器
+    // ================================================================
+    reg [31:0] ID_EX_pc;
+    reg [31:0] ID_EX_pc4;
+    reg [31:0] ID_EX_rD1;
+    reg [31:0] ID_EX_rD2;
+    reg [31:0] ID_EX_ext;
+    reg [ 4:0] ID_EX_rs1;
+    reg [ 4:0] ID_EX_rs2;
+    reg [ 4:0] ID_EX_rd;
+    reg [ 4:0] ID_EX_alu_op;
+    reg        ID_EX_alua_sel;
+    reg        ID_EX_alub_sel;
+    reg [ 2:0] ID_EX_ram_rop;
+    reg [ 3:0] ID_EX_ram_wop;
+    reg        ID_EX_rf_we;
+    reg [ 1:0] ID_EX_rf_wsel;
+    reg        ID_EX_wr_sel;
+    reg [ 1:0] ID_EX_npc_op;
+    reg        ID_EX_is_mul_div;
+    reg        ID_EX_is_ld_st;
+
     always @(posedge cpu_clk or posedge cpu_rst) begin
-        if      (cpu_rst)       mul_div_flag <= 1'b0;
-        else if (is_mul_div)    mul_div_flag <= 1'b1;
-        else if (!mul_div_busy) mul_div_flag <= 1'b0;
+        if (cpu_rst) begin
+            ID_EX_pc      <= 32'h0;
+            ID_EX_pc4     <= 32'h0;
+            ID_EX_rD1     <= 32'h0;
+            ID_EX_rD2     <= 32'h0;
+            ID_EX_ext     <= 32'h0;
+            ID_EX_rs1     <= 5'h0;
+            ID_EX_rs2     <= 5'h0;
+            ID_EX_rd      <= 5'h0;
+            ID_EX_alu_op  <= `ALU_ADD;
+            ID_EX_alua_sel <= `ALUA_R1;
+            ID_EX_alub_sel <= `ALUB_R2;
+            ID_EX_ram_rop <= `RAM_EXT_N;
+            ID_EX_ram_wop <= `RAM_WE_N;
+            ID_EX_rf_we   <= 1'b0;
+            ID_EX_rf_wsel <= `WB_ALU;
+            ID_EX_wr_sel  <= `WR_RD;
+            ID_EX_npc_op  <= `NPC_PC4;
+            ID_EX_is_mul_div <= 1'b0;
+            ID_EX_is_ld_st   <= 1'b0;
+        end else if (id_bubble) begin
+            // if_stall 或 flush → 插入完整NOP (不写RF,不访存,不分支)
+            ID_EX_alu_op  <= `ALU_ADD;
+            ID_EX_ram_rop <= `RAM_EXT_N;
+            ID_EX_ram_wop <= `RAM_WE_N;
+            ID_EX_rf_we   <= 1'b0;
+            ID_EX_rf_wsel <= `WB_ALU;
+            ID_EX_npc_op  <= `NPC_PC4;
+            ID_EX_is_mul_div <= 1'b0;
+            ID_EX_is_ld_st   <= 1'b0;
+        end else if (pipeline_stop) begin
+            // 多周期暂停: 冻结ID/EX, 保持当前值
+        end else begin
+            ID_EX_pc      <= IF_ID_pc;
+            ID_EX_pc4     <= IF_ID_pc4;
+            ID_EX_rD1     <= id_rD1;
+            ID_EX_rD2     <= id_rD2;
+            ID_EX_ext     <= id_ext;
+            ID_EX_rs1     <= id_rs1;
+            ID_EX_rs2     <= id_rs2;
+            ID_EX_rd      <= id_rd;
+            ID_EX_alu_op  <= id_alu_op;
+            ID_EX_alua_sel <= id_alua_sel;
+            ID_EX_alub_sel <= id_alub_sel;
+            ID_EX_ram_rop <= id_ram_rop;
+            ID_EX_ram_wop <= id_ram_wop;
+            ID_EX_rf_we   <= id_rf_we;
+            ID_EX_rf_wsel <= id_rf_wsel;
+            ID_EX_wr_sel  <= id_wr_sel;
+            ID_EX_npc_op  <= id_npc_op;
+            ID_EX_is_mul_div <= id_is_mul_div;
+            ID_EX_is_ld_st   <= id_is_ld_st;
+        end
     end
 
-    // 访存、乘除法指令无法在1个时钟内执行完，故先把指令的目标寄存器缓存起来
-    always @(posedge cpu_clk) begin
-        if (is_ld_st | is_mul_div) rf_wR_r <= rf_wR;
-    end
+    // ================================================================
+    // EX 阶段 — ALU + 数据前递
+    // ================================================================
 
-    /***************************** EX *****************************/
-    assign alu_a = alua_sel ? rf_rd1 : pc ;
-    assign alu_b = alub_sel ? rf_rd2 : ext;
-    
+    // === 前递逻辑 ===
+    // EX/MEM 的结果前递
+    wire fwd_ex_a = ID_EX_rf_we && (EX_MEM_rd != 5'h0) && (EX_MEM_rd == ID_EX_rs1);
+    wire fwd_ex_b = ID_EX_rf_we && (EX_MEM_rd != 5'h0) && (EX_MEM_rd == ID_EX_rs2);
+
+    // MEM/WB 的结果前递 (优先给 EX/MEM 没覆盖的)
+    wire fwd_mem_a = MEM_WB_rf_we && (MEM_WB_rd != 5'h0) && (MEM_WB_rd == ID_EX_rs1) && !fwd_ex_a;
+    wire fwd_mem_b = MEM_WB_rf_we && (MEM_WB_rd != 5'h0) && (MEM_WB_rd == ID_EX_rs2) && !fwd_ex_b;
+
+    wire [31:0] ex_fwd_data  = EX_MEM_rf_wsel == `WB_PC4 ? EX_MEM_pc4 : EX_MEM_alu_c;
+    wire [31:0] mem_fwd_data = wb_wD;
+
+    wire [31:0] fwd_a = fwd_ex_a  ? ex_fwd_data :
+                         fwd_mem_a ? mem_fwd_data : ID_EX_rD1;
+    wire [31:0] fwd_b = fwd_ex_b  ? ex_fwd_data :
+                         fwd_mem_b ? mem_fwd_data : ID_EX_rD2;
+
+    // flush=1时组合逻辑强制ID/EX指令失效(防止错误指令执行)
+    wire ex_alu_op_f = flush ? `ALU_ADD : ID_EX_alu_op;
+    wire ex_alua_f   = flush ? `ALUA_R1 : ID_EX_alua_sel;
+    wire ex_alub_f   = flush ? `ALUB_R2 : ID_EX_alub_sel;
+    wire ex_ramr_f   = flush ? `RAM_EXT_N : ID_EX_ram_rop;
+    wire ex_ramw_f   = flush ? `RAM_WE_N : ID_EX_ram_wop;
+    wire ex_rfwe_f   = flush ? 1'b0 : ID_EX_rf_we;
+
+    wire [31:0] alu_a = ex_alua_f ? fwd_a : ID_EX_pc;
+    wire [31:0] alu_b = ex_alub_f ? fwd_b : ID_EX_ext;
+
+    wire [31:0] alu_c;
+    wire        br;
+    wire        mul_div_busy;
+
     ALU U_ALU (
-        .rst        (cpu_rst),
-        .clk        (cpu_clk),
-        .op         (alu_op),
-        .a          (alu_a),
-        .b          (alu_b),
-        .br         (br),
-        .c          (alu_c),
-        .busy       (mul_div_busy)
+        .rst  (cpu_rst),
+        .clk  (cpu_clk),
+        .op   (ex_alu_op_f),
+        .a    (alu_a),
+        .b    (alu_b),
+        .br   (br),
+        .c    (alu_c),
+        .busy (mul_div_busy)
     );
 
-    /***************************** MEM *****************************/
+    // === 分支处理 (静态预测不跳) ===
+    wire br_taken;
+    assign br_taken = (ID_EX_npc_op == `NPC_BRCH && br) ||
+                      (ID_EX_npc_op == `NPC_JMP) ||
+                      (ID_EX_npc_op == `NPC_JR);
+
+    // 分支跳转时: flush 下一拍清空 IF/ID (已经取错的指令)
+    reg br_flush_r;
+    always @(posedge cpu_clk or posedge cpu_rst) begin
+        if (cpu_rst) br_flush_r <= 1'b0;
+        else        br_flush_r <= br_taken && !stall;
+    end
+    assign flush = br_flush_r;
+
+    // NPC: 默认用IF段pc算pc+4(顺序), 分支跳转时用EX段信号算目标
+    assign ex_npc_op = br_flush_r ? ID_EX_npc_op : `NPC_PC4;
+    assign ex_br     = br;
+    assign ex_alu_c  = alu_c;
+    assign ex_ext    = ID_EX_ext;
+    assign ex_pc     = br_flush_r ? ID_EX_pc : pc;  // ← 顺序流用当前IF的pc!
+
+    // ================================================================
+    // EX/MEM 流水线寄存器
+    // ================================================================
+    reg [31:0] EX_MEM_pc;
+    reg [31:0] EX_MEM_pc4;
+    reg [31:0] EX_MEM_alu_c;
+    reg [31:0] EX_MEM_rD2;
+    reg [31:0] EX_MEM_ext;
+    reg [ 4:0] EX_MEM_rd;
+    reg [ 2:0] EX_MEM_ram_rop;
+    reg [ 3:0] EX_MEM_ram_wop;
+    reg        EX_MEM_rf_we;
+    reg [ 1:0] EX_MEM_rf_wsel;
+    reg        EX_MEM_valid;
+
+    always @(posedge cpu_clk or posedge cpu_rst) begin
+        if (cpu_rst) begin
+            EX_MEM_pc      <= 32'h0;
+            EX_MEM_pc4     <= 32'h0;
+            EX_MEM_alu_c   <= 32'h0;
+            EX_MEM_rD2     <= 32'h0;
+            EX_MEM_ext     <= 32'h0;
+            EX_MEM_rd      <= 5'h0;
+            EX_MEM_ram_rop <= `RAM_EXT_N;
+            EX_MEM_ram_wop <= `RAM_WE_N;
+            EX_MEM_rf_we   <= 1'b0;
+            EX_MEM_rf_wsel <= `WB_ALU;
+            EX_MEM_valid   <= 1'b0;
+        end else if (!pipeline_stop) begin
+            EX_MEM_pc      <= ID_EX_pc;
+            EX_MEM_pc4     <= ID_EX_pc4;
+            EX_MEM_alu_c   <= alu_c;
+            EX_MEM_rD2     <= fwd_b;  // store 用前递后的值
+            EX_MEM_ext     <= ID_EX_ext;
+            EX_MEM_rd      <= ID_EX_rd;
+            EX_MEM_ram_rop <= ex_ramr_f;
+            EX_MEM_ram_wop <= ex_ramw_f;
+            EX_MEM_rf_we   <= ex_rfwe_f;
+            EX_MEM_rf_wsel <= ID_EX_rf_wsel;
+            EX_MEM_valid   <= ex_rfwe_f || (ex_ramr_f != `RAM_EXT_N) || (ex_ramw_f != `RAM_WE_N);
+        end
+    end
+
+    // ================================================================
+    // MEM 阶段 — 访存
+    // ================================================================
+    wire [ 3:0] da_ren, da_wen;
+    wire [31:0] da_addr, da_wdata, ram_ext;
+
     MREQ U_MEM_REQ (
-        .ram_addr   (alu_c),
-
-        .ram_rop    (ram_rop),
-        .da_ren     (da_ren),
-        .da_addr    (da_addr),
-
-        .ram_wop    (ram_wop),
-        .ram_wdata  (rf_rd2),
-        .da_wen     (da_wen),
-        .da_wdata   (da_wdata)
+        .ram_addr  (EX_MEM_alu_c),
+        .ram_rop   (EX_MEM_ram_rop),
+        .da_ren    (da_ren),
+        .da_addr   (da_addr),
+        .ram_wop   (EX_MEM_ram_wop),
+        .ram_wdata (EX_MEM_rD2),
+        .da_wen    (da_wen),
+        .da_wdata  (da_wdata)
     );
 
     MEXT U_MEM_EXT (
-        .op         (ram_rop_r),
-        .din        (daccess_rdata),
-        .byte_offs  (alu_c_r[1:0]),
-        .ext        (ram_ext)
+        .op        (EX_MEM_ram_rop),
+        .din       (daccess_rdata),
+        .byte_offs (EX_MEM_alu_c[1:0]),
+        .ext       (ram_ext)
     );
 
-
-    always @(posedge cpu_clk) if (is_ld_st) alu_c_r   <= alu_c;
-    always @(posedge cpu_clk) if (is_ld_st) ram_rop_r <= ram_rop;
-
-    // Interface to Bridge
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
-            daccess_ren   <= 4'h0;
-            daccess_wen   <= 4'h0;
+            daccess_ren <= 4'h0;
+            daccess_wen <= 4'h0;
         end else begin
-            daccess_ren   <= da_ren;
-            daccess_addr  <= da_addr;
-            daccess_wen   <= da_wen;
+            daccess_ren  <= da_ren;
+            daccess_addr <= da_addr;
+            daccess_wen  <= da_wen;
             daccess_wdata <= da_wdata;
         end
     end
 
-    assign ld_st_done = daccess_rvalid | daccess_wresp;
-
-    /***************************** WB *****************************/
-    assign rf_we1 = ld_st_flag   & daccess_rvalid |                 // Load指令在读取到数据时写回
-                    mul_div_flag & !mul_div_busy  |                 // 乘除法指令在运算完成时写回
-                    ifetch_valid & rf_we & !is_ld_st & !is_mul_div; // 其他指令在取到指令时写回
-
-    assign rf_wR  = wr_sel ? inst[4:0] : 5'h1;
-    assign rf_wR1 = ld_st_flag | mul_div_flag ? rf_wR_r : rf_wR;
-
-    always @(*) begin
-        casex ({ld_st_flag, rf_wsel})
-            {1'b0, `WB_PC4}: rf_wD = pc4;
-            {1'b0, `WB_ALU}: rf_wD = alu_c;
-            {1'b0, `WB_EXT}: rf_wD = ext;
-            {1'b1, 2'b??  }: rf_wD = ram_ext;
-            default        : rf_wD = 32'h0;
-        endcase
-    end
-
-    assign inst_finished = ld_st_flag   & ld_st_done    |           // 访存指令在读写完毕时执行完成
-                           mul_div_flag & !mul_div_busy |           // 乘除法指令在运算完毕时完成
-                           ifetch_valid & !is_ld_st & !is_mul_div;  // 其他指令单周期完成（即取到指令的同时执行完成）
+    // ================================================================
+    // MEM/WB 流水线寄存器
+    // ================================================================
+    reg [31:0] MEM_WB_pc;
+    reg [31:0] MEM_WB_alu_c;
+    reg [31:0] MEM_WB_ram_ext;
+    reg [31:0] MEM_WB_pc4;
+    reg [ 4:0] MEM_WB_rd;
+    reg        MEM_WB_rf_we;
+    reg [ 1:0] MEM_WB_rf_wsel;
 
     always @(posedge cpu_clk or posedge cpu_rst) begin
-        inst_finished_r <= cpu_rst ? 1'b0 : inst_finished;
+        if (cpu_rst) begin
+            MEM_WB_alu_c   <= 32'h0;
+            MEM_WB_ram_ext <= 32'h0;
+            MEM_WB_pc4     <= 32'h0;
+            MEM_WB_rd      <= 5'h0;
+            MEM_WB_rf_we   <= 1'b0;
+            MEM_WB_rf_wsel <= `WB_ALU;
+        end else if (!pipeline_stop) begin
+            MEM_WB_pc      <= EX_MEM_pc;
+            MEM_WB_alu_c   <= EX_MEM_alu_c;
+            MEM_WB_ram_ext <= ram_ext;
+            MEM_WB_pc4     <= EX_MEM_pc4;
+            MEM_WB_rd      <= EX_MEM_rd;
+            MEM_WB_rf_we   <= EX_MEM_rf_we;
+            MEM_WB_rf_wsel <= EX_MEM_rf_wsel;
+        end
     end
 
+    // ================================================================
+    // WB 阶段 — 写回
+    // ================================================================
+    wire [31:0] wb_wD;
+    assign wb_wD = (MEM_WB_rf_wsel == `WB_PC4) ? MEM_WB_pc4 :
+                   (MEM_WB_rf_wsel == `WB_RAM) ? MEM_WB_ram_ext :
+                   (MEM_WB_rf_wsel == `WB_EXT) ? MEM_WB_alu_c :
+                   MEM_WB_alu_c;
 
-
-    /********************* Your CPU ends here *********************/
-
+    // ================================================================
+    // Debug trace
+    // ================================================================
 `ifdef RUN_TRACE
-    wire [31:0] debug_wb_pc    /* verilator public */ ;     // WB阶段的PC
-    wire        debug_wb_rf_we /* verilator public */ ;     // WB阶段的寄存器写使能
-    wire [ 4:0] debug_wb_rf_wR /* verilator public */ ;     // WB阶段的目标寄存器   (若wb_rf_we为0，此项可为任意值)
-    wire [31:0] debug_wb_rf_wD /* verilator public */ ;     // WB阶段写入寄存器的值 (若wb_rf_we为0，此项可为任意值)
+    wire [31:0] debug_wb_pc    /* verilator public */ ;
+    wire        debug_wb_rf_we /* verilator public */ ;
+    wire [ 4:0] debug_wb_rf_wR /* verilator public */ ;
+    wire [31:0] debug_wb_rf_wD /* verilator public */ ;
+    wire [31:0] debug_mem_pc    /* verilator public */ ;
+    wire [ 3:0] debug_mem_we    /* verilator public */ ;
+    wire [31:0] debug_mem_waddr /* verilator public */ ;
+    wire [31:0] debug_mem_wdata /* verilator public */ ;
 
-    wire [31:0] debug_mem_pc    /* verilator public */ ;    // MEM阶段的PC
-    wire [ 3:0] debug_mem_we    /* verilator public */ ;    // MEM阶段写访存时的写使能
-    wire [31:0] debug_mem_waddr /* verilator public */ ;    // MEM阶段写访存时的写地址 (若mem_we为0，此项可为任意值)
-    wire [31:0] debug_mem_wdata /* verilator public */ ;    // MEM阶段写访存时的写数据 (若mem_we为0，此项可为任意值)
-
-    assign debug_wb_pc    = pc;
-    assign debug_wb_rf_we = rf_we1;
-    assign debug_wb_rf_wR = rf_wR1;
-    assign debug_wb_rf_wD = rf_wD;
-
-    assign debug_mem_pc    = pc;
-    assign debug_mem_we    = daccess_wen;
-    assign debug_mem_waddr = daccess_addr;
-    assign debug_mem_wdata = daccess_wdata;
+    assign debug_wb_pc    = MEM_WB_pc;
+    assign debug_wb_rf_we = MEM_WB_rf_we;
+    assign debug_wb_rf_wR = MEM_WB_rd;
+    assign debug_wb_rf_wD = wb_wD;
+    assign debug_mem_pc    = EX_MEM_pc;
+    assign debug_mem_we    = da_wen;
+    assign debug_mem_waddr = da_addr;
+    assign debug_mem_wdata = da_wdata;
 `endif
 
 endmodule
