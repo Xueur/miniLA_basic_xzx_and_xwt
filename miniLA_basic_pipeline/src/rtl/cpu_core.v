@@ -11,19 +11,19 @@ module cpu_core(
     input  wire         ifetch_valid /* verilator public */ ,
     input  wire [31:0]  ifetch_inst,
 
-    output reg  [ 3:0]  daccess_ren,
-    output reg  [31:0]  daccess_addr,
+    output wire [ 3:0]  daccess_ren,
+    output wire [31:0]  daccess_addr,
     input  wire         daccess_rvalid,
     input  wire [31:0]  daccess_rdata,
-    output reg  [ 3:0]  daccess_wen,
-    output reg  [31:0]  daccess_wdata,
+    output wire [ 3:0]  daccess_wen,
+    output wire [31:0]  daccess_wdata,
     input  wire         daccess_wresp
 );
 
     // ================================================================
-    // 全局流水线控制
+    // 全局流水线控制（统一单暂停信号，所有级同步）
     // ================================================================
-    wire stall;           // load-use 冲突 → 暂停 IF 和 ID
+    wire stall;           // 全局暂停：取指/访存/乘除未完成 → 整条流水线冻结
     wire flush;           // 分支预测失败 → 清空 IF/ID 和 ID/EX
 
     // ================================================================
@@ -36,14 +36,22 @@ module cpu_core(
     wire first_req = rst_r & !cpu_rst;
     always @(posedge cpu_clk) rst_r <= cpu_rst;
 
-    // 取指: 流水线不暂停就一直取
+    // 取指暂停：指令存储器未返回有效数据
     wire if_stall = !ifetch_valid && !first_req;
-    assign ifetch_req  = first_req | !pipeline_stop;
+    
+    // 取指请求：复位后首次取指 + 不暂停时持续取指
+    assign ifetch_req  = first_req | !stall;
     assign ifetch_addr = pc;
 
-    // NPC 在 IF 段: 用 EX 段的控制信号(分支在EX段解析)
-    // 分支预测: 静态预测不跳 → 默认 pc+4
-    // 分支实际跳转时, EX段的npc_op/br/offset/jr_target 产生正确npc
+    // 分支排空：冲刷后延迟1拍阻塞IF_ID，排空指令ROM残留错误指令
+    reg        flush_drain;
+    always @(posedge cpu_clk or posedge cpu_rst) begin
+        if (cpu_rst)     flush_drain <= 1'b0;
+        else if (flush)  flush_drain <= 1'b1;
+        else             flush_drain <= 1'b0;
+    end
+
+    // NPC 在 EX 段解析分支目标
     wire [ 1:0] ex_npc_op;
     wire        ex_br;
     wire [31:0] ex_alu_c;
@@ -74,7 +82,7 @@ module cpu_core(
     reg [31:0] IF_ID_inst;
     reg [31:0] IF_ID_pc;
     reg [31:0] IF_ID_pc4;
-    reg [31:0] if_pc_delayed;   // 上一拍的pc (指令被请求时的地址)
+    reg [31:0] if_pc_delayed;   // 上一拍的pc，与ifetch_inst时序对齐
 
     always @(posedge cpu_clk) if_pc_delayed <= pc;
 
@@ -84,16 +92,19 @@ module cpu_core(
             IF_ID_pc   <= 32'h0;
             IF_ID_pc4  <= 32'h0;
         end else if (flush) begin
-            // 分支预测失败: IF/ID 刷成 NOP
+            // 分支冲刷：清空IF_ID
             IF_ID_inst <= 32'h00000000;
             IF_ID_pc   <= 32'h0;
             IF_ID_pc4  <= 32'h0;
+        end else if (flush_drain) begin
+            // 排空指令ROM残留的错误指令
         end else if (!stall) begin
+            // 正常流动：更新为新取到的指令
             IF_ID_inst <= ifetch_valid ? ifetch_inst : 32'h00000000;
-            IF_ID_pc   <= if_pc_delayed;   // 指令被请求时的PC, 不是当前PC!
+            IF_ID_pc   <= if_pc_delayed;
             IF_ID_pc4  <= if_pc_delayed + 32'h4;
         end
-        // stall=1 时 IF/ID 保持不变
+        // stall=1 时保持不变
     end
 
     // ================================================================
@@ -153,32 +164,9 @@ module cpu_core(
         .ext (id_ext)
     );
 
-    // 乘除法判断 (从 alu_op 推导)
+    // 乘除法判断
     wire id_is_mul_div = (id_alu_op == `ALU_MUL ) | (id_alu_op == `ALU_MULH) | (id_alu_op == `ALU_MULHU)
                        | (id_alu_op == `ALU_DIV ) | (id_alu_op == `ALU_MOD ) | (id_alu_op == `ALU_DIVU) | (id_alu_op == `ALU_MODU);
-    wire id_is_ld_st   = (id_ram_rop != `RAM_EXT_N) | (id_ram_wop != `RAM_WE_N);
-
-    // ================================================================
-    // 流水线暂停
-    // 访存: 走到MEM段再停(EX段放行算地址)
-    // 乘除: 走到EX段再停(等ALU busy)
-    // ================================================================
-    reg pipeline_stop;
-    wire mem_waiting = (EX_MEM_ram_rop != `RAM_EXT_N || EX_MEM_ram_wop != `RAM_WE_N)
-                       && !daccess_rvalid && !daccess_wresp;
-    wire ex_mul_div_waiting = ID_EX_is_mul_div && mul_div_busy;
-
-    always @(posedge cpu_clk or posedge cpu_rst) begin
-        if (cpu_rst)
-            pipeline_stop <= 1'b0;
-        else
-            pipeline_stop <= mem_waiting || ex_mul_div_waiting;
-    end
-
-    assign stall = pipeline_stop | if_stall;
-    // stall 冻结 IF/ID(等待指令), pipeline_stop 冻结全流水线(等待访存/乘除)
-    wire id_bubble = if_stall | flush;  // IF没拿到指令 → ID/EX插NOP
-
 
     // ================================================================
     // ID/EX 流水线寄存器
@@ -201,7 +189,8 @@ module cpu_core(
     reg        ID_EX_wr_sel;
     reg [ 1:0] ID_EX_npc_op;
     reg        ID_EX_is_mul_div;
-    reg        ID_EX_is_ld_st;
+
+    wire id_bubble = flush;
 
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
@@ -223,9 +212,8 @@ module cpu_core(
             ID_EX_wr_sel  <= `WR_RD;
             ID_EX_npc_op  <= `NPC_PC4;
             ID_EX_is_mul_div <= 1'b0;
-            ID_EX_is_ld_st   <= 1'b0;
         end else if (id_bubble) begin
-            // if_stall 或 flush → 插入完整NOP (不写RF,不访存,不分支)
+            // 分支冲刷 → 插入NOP气泡
             ID_EX_alu_op  <= `ALU_ADD;
             ID_EX_ram_rop <= `RAM_EXT_N;
             ID_EX_ram_wop <= `RAM_WE_N;
@@ -233,10 +221,8 @@ module cpu_core(
             ID_EX_rf_wsel <= `WB_ALU;
             ID_EX_npc_op  <= `NPC_PC4;
             ID_EX_is_mul_div <= 1'b0;
-            ID_EX_is_ld_st   <= 1'b0;
-        end else if (pipeline_stop) begin
-            // 多周期暂停: 冻结ID/EX, 保持当前值
-        end else begin
+        end else if (!stall) begin
+            // 正常流动
             ID_EX_pc      <= IF_ID_pc;
             ID_EX_pc4     <= IF_ID_pc4;
             ID_EX_rD1     <= id_rD1;
@@ -255,8 +241,8 @@ module cpu_core(
             ID_EX_wr_sel  <= id_wr_sel;
             ID_EX_npc_op  <= id_npc_op;
             ID_EX_is_mul_div <= id_is_mul_div;
-            ID_EX_is_ld_st   <= id_is_ld_st;
         end
+        // stall=1 时保持不变
     end
 
     // ================================================================
@@ -264,32 +250,27 @@ module cpu_core(
     // ================================================================
 
     // === 前递逻辑 ===
-    // EX/MEM 的结果前递
-    wire fwd_ex_a = ID_EX_rf_we && (EX_MEM_rd != 5'h0) && (EX_MEM_rd == ID_EX_rs1);
-    wire fwd_ex_b = ID_EX_rf_we && (EX_MEM_rd != 5'h0) && (EX_MEM_rd == ID_EX_rs2);
+    // EX/MEM 阶段结果前递（优先级更高）
+    wire fwd_ex_a = EX_MEM_rf_we && (EX_MEM_rd != 5'h0) && (EX_MEM_rd == ID_EX_rs1);
+    wire fwd_ex_b = EX_MEM_rf_we && (EX_MEM_rd != 5'h0) && (EX_MEM_rd == ID_EX_rs2);
 
-    // MEM/WB 的结果前递 (优先给 EX/MEM 没覆盖的)
+    // MEM/WB 阶段结果前递
     wire fwd_mem_a = MEM_WB_rf_we && (MEM_WB_rd != 5'h0) && (MEM_WB_rd == ID_EX_rs1) && !fwd_ex_a;
     wire fwd_mem_b = MEM_WB_rf_we && (MEM_WB_rd != 5'h0) && (MEM_WB_rd == ID_EX_rs2) && !fwd_ex_b;
 
-    wire [31:0] ex_fwd_data  = EX_MEM_rf_wsel == `WB_PC4 ? EX_MEM_pc4 : EX_MEM_alu_c;
+    wire [31:0] ex_fwd_data  = (EX_MEM_rf_wsel == `WB_PC4) ? EX_MEM_pc4 :
+                               (EX_MEM_rf_wsel == `WB_EXT) ? EX_MEM_ext :
+                               EX_MEM_alu_c;
     wire [31:0] mem_fwd_data = wb_wD;
 
     wire [31:0] fwd_a = fwd_ex_a  ? ex_fwd_data :
-                         fwd_mem_a ? mem_fwd_data : ID_EX_rD1;
+                        fwd_mem_a ? mem_fwd_data : ID_EX_rD1;
     wire [31:0] fwd_b = fwd_ex_b  ? ex_fwd_data :
-                         fwd_mem_b ? mem_fwd_data : ID_EX_rD2;
+                        fwd_mem_b ? mem_fwd_data : ID_EX_rD2;
 
-    // flush=1时组合逻辑强制ID/EX指令失效(防止错误指令执行)
-    wire ex_alu_op_f = flush ? `ALU_ADD : ID_EX_alu_op;
-    wire ex_alua_f   = flush ? `ALUA_R1 : ID_EX_alua_sel;
-    wire ex_alub_f   = flush ? `ALUB_R2 : ID_EX_alub_sel;
-    wire ex_ramr_f   = flush ? `RAM_EXT_N : ID_EX_ram_rop;
-    wire ex_ramw_f   = flush ? `RAM_WE_N : ID_EX_ram_wop;
-    wire ex_rfwe_f   = flush ? 1'b0 : ID_EX_rf_we;
-
-    wire [31:0] alu_a = ex_alua_f ? fwd_a : ID_EX_pc;
-    wire [31:0] alu_b = ex_alub_f ? fwd_b : ID_EX_ext;
+    // ALU 输入选择
+    wire [31:0] alu_a = ID_EX_alua_sel ? fwd_a : ID_EX_pc;
+    wire [31:0] alu_b = ID_EX_alub_sel ? fwd_b : ID_EX_ext;
 
     wire [31:0] alu_c;
     wire        br;
@@ -298,7 +279,7 @@ module cpu_core(
     ALU U_ALU (
         .rst  (cpu_rst),
         .clk  (cpu_clk),
-        .op   (ex_alu_op_f),
+        .op   (ID_EX_alu_op),
         .a    (alu_a),
         .b    (alu_b),
         .br   (br),
@@ -306,26 +287,22 @@ module cpu_core(
         .busy (mul_div_busy)
     );
 
-    // === 分支处理 (静态预测不跳) ===
+    // === 分支处理（静态预测不跳） ===
     wire br_taken;
     assign br_taken = (ID_EX_npc_op == `NPC_BRCH && br) ||
                       (ID_EX_npc_op == `NPC_JMP) ||
                       (ID_EX_npc_op == `NPC_JR);
 
-    // 分支跳转时: flush 下一拍清空 IF/ID (已经取错的指令)
-    reg br_flush_r;
-    always @(posedge cpu_clk or posedge cpu_rst) begin
-        if (cpu_rst) br_flush_r <= 1'b0;
-        else        br_flush_r <= br_taken && !stall;
-    end
-    assign flush = br_flush_r;
+    // flush 组合逻辑输出
+    wire flush_cmb = br_taken && !stall;
+    assign flush = flush_cmb;
 
-    // NPC: 默认用IF段pc算pc+4(顺序), 分支跳转时用EX段信号算目标
-    assign ex_npc_op = br_flush_r ? ID_EX_npc_op : `NPC_PC4;
+    // NPC 选择：分支跳转用EX段信息，否则默认pc+4
+    assign ex_npc_op = flush_cmb ? ID_EX_npc_op : `NPC_PC4;
     assign ex_br     = br;
     assign ex_alu_c  = alu_c;
     assign ex_ext    = ID_EX_ext;
-    assign ex_pc     = br_flush_r ? ID_EX_pc : pc;  // ← 顺序流用当前IF的pc!
+    assign ex_pc     = flush_cmb ? ID_EX_pc : pc;
 
     // ================================================================
     // EX/MEM 流水线寄存器
@@ -340,7 +317,6 @@ module cpu_core(
     reg [ 3:0] EX_MEM_ram_wop;
     reg        EX_MEM_rf_we;
     reg [ 1:0] EX_MEM_rf_wsel;
-    reg        EX_MEM_valid;
 
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
@@ -354,24 +330,24 @@ module cpu_core(
             EX_MEM_ram_wop <= `RAM_WE_N;
             EX_MEM_rf_we   <= 1'b0;
             EX_MEM_rf_wsel <= `WB_ALU;
-            EX_MEM_valid   <= 1'b0;
-        end else if (!pipeline_stop) begin
+        end else if (!stall) begin
+            // 与前级同步更新
             EX_MEM_pc      <= ID_EX_pc;
             EX_MEM_pc4     <= ID_EX_pc4;
             EX_MEM_alu_c   <= alu_c;
-            EX_MEM_rD2     <= fwd_b;  // store 用前递后的值
+            EX_MEM_rD2     <= fwd_b;
             EX_MEM_ext     <= ID_EX_ext;
             EX_MEM_rd      <= ID_EX_rd;
-            EX_MEM_ram_rop <= ex_ramr_f;
-            EX_MEM_ram_wop <= ex_ramw_f;
-            EX_MEM_rf_we   <= ex_rfwe_f;
+            EX_MEM_ram_rop <= ID_EX_ram_rop;
+            EX_MEM_ram_wop <= ID_EX_ram_wop;
+            EX_MEM_rf_we   <= ID_EX_rf_we;
             EX_MEM_rf_wsel <= ID_EX_rf_wsel;
-            EX_MEM_valid   <= ex_rfwe_f || (ex_ramr_f != `RAM_EXT_N) || (ex_ramw_f != `RAM_WE_N);
         end
+        // stall=1 时保持不变，等待访存/乘除完成
     end
 
     // ================================================================
-    // MEM 阶段 — 访存
+    // MEM 阶段 — 访存 + 全局暂停生成
     // ================================================================
     wire [ 3:0] da_ren, da_wen;
     wire [31:0] da_addr, da_wdata, ram_ext;
@@ -394,17 +370,21 @@ module cpu_core(
         .ext       (ram_ext)
     );
 
-    always @(posedge cpu_clk or posedge cpu_rst) begin
-        if (cpu_rst) begin
-            daccess_ren <= 4'h0;
-            daccess_wen <= 4'h0;
-        end else begin
-            daccess_ren  <= da_ren;
-            daccess_addr <= da_addr;
-            daccess_wen  <= da_wen;
-            daccess_wdata <= da_wdata;
-        end
-    end
+    assign daccess_ren   = da_ren;
+    assign daccess_addr  = da_addr;
+    assign daccess_wen   = da_wen;
+    assign daccess_wdata = da_wdata;
+
+    // 访存暂停：MEM阶段有有效访存且未收到响应
+    wire mem_read  = (EX_MEM_ram_rop != `RAM_EXT_N);
+    wire mem_write = (EX_MEM_ram_wop != `RAM_WE_N);
+    wire mem_stall = (mem_read && !daccess_rvalid) || (mem_write && !daccess_wresp);
+
+    // 乘除法暂停：EX阶段有乘除法且正在执行
+    wire mul_stall = ID_EX_is_mul_div && mul_div_busy;
+
+    // 全局统一暂停信号
+    assign stall = if_stall | mem_stall | mul_stall;
 
     // ================================================================
     // MEM/WB 流水线寄存器
@@ -412,6 +392,7 @@ module cpu_core(
     reg [31:0] MEM_WB_pc;
     reg [31:0] MEM_WB_alu_c;
     reg [31:0] MEM_WB_ram_ext;
+    reg [31:0] MEM_WB_ext;
     reg [31:0] MEM_WB_pc4;
     reg [ 4:0] MEM_WB_rd;
     reg        MEM_WB_rf_we;
@@ -421,19 +402,23 @@ module cpu_core(
         if (cpu_rst) begin
             MEM_WB_alu_c   <= 32'h0;
             MEM_WB_ram_ext <= 32'h0;
+            MEM_WB_ext     <= 32'h0;
             MEM_WB_pc4     <= 32'h0;
             MEM_WB_rd      <= 5'h0;
             MEM_WB_rf_we   <= 1'b0;
             MEM_WB_rf_wsel <= `WB_ALU;
-        end else if (!pipeline_stop) begin
+        end else if (!stall) begin
+            // 与前级同步更新，确保访存完成后才写回
             MEM_WB_pc      <= EX_MEM_pc;
             MEM_WB_alu_c   <= EX_MEM_alu_c;
             MEM_WB_ram_ext <= ram_ext;
+            MEM_WB_ext     <= EX_MEM_ext;
             MEM_WB_pc4     <= EX_MEM_pc4;
             MEM_WB_rd      <= EX_MEM_rd;
             MEM_WB_rf_we   <= EX_MEM_rf_we;
             MEM_WB_rf_wsel <= EX_MEM_rf_wsel;
         end
+        // stall=1 时保持不变，防止重复写回
     end
 
     // ================================================================
@@ -442,11 +427,31 @@ module cpu_core(
     wire [31:0] wb_wD;
     assign wb_wD = (MEM_WB_rf_wsel == `WB_PC4) ? MEM_WB_pc4 :
                    (MEM_WB_rf_wsel == `WB_RAM) ? MEM_WB_ram_ext :
-                   (MEM_WB_rf_wsel == `WB_EXT) ? MEM_WB_alu_c :
+                   (MEM_WB_rf_wsel == `WB_EXT) ? MEM_WB_ext :
                    MEM_WB_alu_c;
 
     // ================================================================
     // Debug trace
+    // ================================================================
+    reg [31:0] dbg_cnt;
+    always @(posedge cpu_clk or posedge cpu_rst) begin
+        if (cpu_rst) begin
+            dbg_cnt <= 0;
+        end else begin
+            dbg_cnt <= dbg_cnt + 1;
+            if (flush)
+                $display("[PIPE %d] === FLUSH br_taken=%d npc=%08x stall=%d ===", dbg_cnt, br_taken, npc, stall);
+            if (!stall && !flush)
+                $display("[PIPE %d] IF->ID pc=%08x inst=%08x valid=%d", dbg_cnt, if_pc_delayed, ifetch_valid ? ifetch_inst : 32'h0, ifetch_valid);
+            if (!flush && !stall)
+                $display("[PIPE %d] ID->EX pc=%08x inst=%08x rf_we=%d", dbg_cnt, IF_ID_pc, IF_ID_inst, id_rf_we);
+            if (!stall)
+                $display("[PIPE %d] EX->MEM pc=%08x rf_we=%d", dbg_cnt, ID_EX_pc, ID_EX_rf_we);
+            if (MEM_WB_rf_we)
+                $display("[PIPE %d] WB pc=%08x rd=%d wD=%08x", dbg_cnt, MEM_WB_pc, MEM_WB_rd, wb_wD);
+        end
+    end
+
     // ================================================================
 `ifdef RUN_TRACE
     wire [31:0] debug_wb_pc    /* verilator public */ ;
