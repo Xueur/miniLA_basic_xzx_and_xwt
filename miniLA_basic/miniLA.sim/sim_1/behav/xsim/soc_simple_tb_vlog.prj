@@ -13,7 +13,6 @@ verilog xil_defaultlib  --include "../../../../src/rtl" --include "../../../../m
 "../../../../src/rtl/PC.v" \
 "../../../../src/rtl/RF.v" \
 "../../../../src/rtl/axi_bus.v" \
-"../../../../src/rtl/bram_axi.v" \
 "../../../../src/rtl/cpu_core.v" \
 "../../../../src/rtl/cpu_top.v" \
 "../../../../src/rtl/divider.v" \

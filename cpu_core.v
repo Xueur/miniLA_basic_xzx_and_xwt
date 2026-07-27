@@ -18,13 +18,23 @@ module cpu_core(
     output wire [ 3:0]  daccess_wen,
     output wire [31:0]  daccess_wdata,
     input  wire         daccess_wresp
+`ifndef RUN_TRACE
+    ,
+    output wire         debug_wb_valid,
+    output wire [31:0]  debug_wb_inst,
+    output wire [31:0]  debug_wb_pc,
+    output wire         debug_wb_rf_we,
+    output wire [ 4:0]  debug_wb_rf_wR,
+    output wire [31:0]  debug_wb_rf_wD,
+    output wire [31:0]  debug_mem_pc,
+    output wire [ 3:0]  debug_mem_we,
+    output wire [31:0]  debug_mem_waddr,
+    output wire [31:0]  debug_mem_wdata
+`endif
 );
 
-    localparam NOP = 32'h03400000;
+    localparam NOP = 32'h0000_0013;
 
-    // =========================================================================
-    // Fetch stage — 脉冲协议取指
-    // =========================================================================
     reg  [31:0] fetch_pc;
     reg  [31:0] req_pc_q;
     reg         fetch_outstanding;
@@ -34,16 +44,10 @@ module cpu_core(
     reg  [31:0] fetch_buf_pc;
     reg  [31:0] fetch_buf_inst;
 
-    // =========================================================================
-    // IF/ID 寄存器
-    // =========================================================================
     reg         ifid_valid;
     reg  [31:0] ifid_pc;
     reg  [31:0] ifid_inst;
 
-    // =========================================================================
-    // ID/EX 寄存器
-    // =========================================================================
     reg         idex_valid;
     reg  [31:0] idex_pc;
     reg  [31:0] idex_inst;
@@ -66,9 +70,6 @@ module cpu_core(
     reg         idex_is_div;
     reg         idex_md_started;
 
-    // =========================================================================
-    // EX/MEM 寄存器
-    // =========================================================================
     reg         exmem_valid;
     reg  [31:0] exmem_pc;
     reg  [31:0] exmem_inst;
@@ -82,9 +83,6 @@ module cpu_core(
     reg         exmem_rf_we;
     reg         mem_req_sent;
 
-    // =========================================================================
-    // MEM/WB 寄存器
-    // =========================================================================
     reg         memwb_valid;
     reg  [31:0] memwb_pc;
     reg  [31:0] memwb_inst;
@@ -92,73 +90,67 @@ module cpu_core(
     reg  [ 4:0] memwb_rd;
     reg         memwb_rf_we;
 
-    // =========================================================================
-    // ID 阶段 — 译码 + 读寄存器
-    // =========================================================================
+    wire [ 6:0] id_opcode = ifid_inst[6:0];
+    wire [ 2:0] id_funct3 = ifid_inst[14:12];
+    wire [ 6:0] id_funct7 = ifid_inst[31:25];
+    wire [ 4:0] id_rs1 = ifid_inst[19:15];
+    wire [ 4:0] id_rs2 = ifid_inst[24:20];
+    wire [ 4:0] id_rd  = ifid_inst[11:7];
 
-    // --- 指令字段提取 (LA32 编码) ---
-    wire [ 4:0] id_rs1 = ifid_inst[9:5];
-
-    // --- Controller ---
     wire [ 1:0] id_npc_op;
-    wire [ 2:0] id_ext_op;
-    wire        id_r2_sel;
-    wire        id_alua_sel;
-    wire        id_alub_sel;
+    wire [ 2:0] id_sext_op;
+    wire         id_alua_sel;
+    wire         id_alub_sel;
     wire [ 4:0] id_alu_op;
+    wire         id_is_mul;
+    wire         id_is_div;
     wire [ 2:0] id_ram_rop;
     wire [ 3:0] id_ram_wop;
-    wire        id_rf_we;
-    wire        id_wr_sel;
+    wire         id_rf_we;
     wire [ 1:0] id_rf_wsel;
-
-    Controller U_CU (
-        .inst_31_15 (ifid_inst[31:15]),
-        .npc_op     (id_npc_op),
-        .ext_op     (id_ext_op),
-        .r2_sel     (id_r2_sel),
-        .alua_sel   (id_alua_sel),
-        .alub_sel   (id_alub_sel),
-        .alu_op     (id_alu_op),
-        .ram_r_op   (id_ram_rop),
-        .ram_w_op   (id_ram_wop),
-        .rf_we      (id_rf_we),
-        .wr_sel     (id_wr_sel),
-        .rf_wsel    (id_rf_wsel)
-    );
-
-    // --- 第二源寄存器选择 (LA32: r2_sel 选择 rk 或 rd) ---
-    wire [ 4:0] id_rs2 = id_r2_sel ? ifid_inst[14:10] : ifid_inst[4:0];
-
-    // --- 目的寄存器 (wr_sel: 1=rd, 0=$ra) ---
-    wire [ 4:0] id_rd  = id_rf_we ? (id_wr_sel ? ifid_inst[4:0] : 5'h1) : 5'h0;
-
-    // --- 立即数扩展 ---
     wire [31:0] id_ext;
-    EXT U_EXT (
-        .op  (id_ext_op),
-        .imm (ifid_inst[25:0]),
-        .ext (id_ext)
-    );
 
-    // --- rs1/rs2 使用判断 (用于 load-use 停顿检测) ---
-    // LA32 中除 LU12I_W(rf_wsel==WB_EXT) 外, alua_sel=1 的指令都真正使用 rs1
-    wire id_rs1_used = id_alua_sel && id_rf_wsel != `WB_EXT;
-    // rs2 被 ALU 使用(alub_sel=1) 或被 store 使用
-    wire id_rs2_used = id_alub_sel || (id_ram_wop != `RAM_WE_N);
+    wire id_op_imm = id_opcode == 7'b0010011;
+    wire id_op_reg = id_opcode == 7'b0110011;
+    wire id_load   = id_opcode == 7'b0000011;
+    wire id_store  = id_opcode == 7'b0100011;
+    wire id_branch = id_opcode == 7'b1100011;
+    wire id_jalr   = id_opcode == 7'b1100111;
+    wire id_rs1_used = id_op_imm | id_op_reg | id_load | id_store |
+                       id_branch | id_jalr;
+    wire id_rs2_used = id_op_reg | id_store | id_branch;
 
-    // --- 乘除法判断 ---
-    wire id_is_mul = (id_alu_op == `ALU_MUL ) | (id_alu_op == `ALU_MULH) | (id_alu_op == `ALU_MULHU);
-    wire id_is_div = (id_alu_op == `ALU_DIV ) | (id_alu_op == `ALU_MOD ) | (id_alu_op == `ALU_DIVU) | (id_alu_op == `ALU_MODU);
-
-    // --- 寄存器文件 (异步读, WB->ID 直通旁路) ---
     wire [31:0] rf_rd1;
     wire [31:0] rf_rd2;
+    wire        wb_valid = memwb_valid;
     wire        wb_rf_we = memwb_valid && memwb_rf_we && memwb_rd != 5'h0;
-    wire [ 4:0] wb_rd    = memwb_rd;
-    wire [31:0] wb_data  = memwb_data;
+    wire [ 4:0] wb_rd = memwb_rd;
+    wire [31:0] wb_data = memwb_data;
     wire [31:0] id_rs1_data = wb_rf_we && wb_rd == id_rs1 ? wb_data : rf_rd1;
     wire [31:0] id_rs2_data = wb_rf_we && wb_rd == id_rs2 ? wb_data : rf_rd2;
+
+    Controller U_CU (
+        .opcode   (id_opcode),
+        .funct3   (id_funct3),
+        .funct7   (id_funct7),
+        .npc_op   (id_npc_op),
+        .sext_op  (id_sext_op),
+        .alua_sel (id_alua_sel),
+        .alub_sel (id_alub_sel),
+        .alu_op   (id_alu_op),
+        .is_mul   (id_is_mul),
+        .is_div   (id_is_div),
+        .ram_r_op (id_ram_rop),
+        .ram_w_op (id_ram_wop),
+        .rf_we    (id_rf_we),
+        .rf_wsel  (id_rf_wsel)
+    );
+
+    SEXT U_SEXT (
+        .op  (id_sext_op),
+        .imm (ifid_inst[31:7]),
+        .ext (id_ext)
+    );
 
     RF U_RF (
         .clk (cpu_clk),
@@ -171,11 +163,6 @@ module cpu_core(
         .rD2 (rf_rd2)
     );
 
-    // =========================================================================
-    // EX 阶段 — ALU + 前递
-    // =========================================================================
-
-    // --- 前递逻辑 ---
     wire exmem_forward_valid = exmem_valid && exmem_rf_we &&
                                exmem_rd != 5'h0 &&
                                exmem_rf_wsel != `WB_RAM;
@@ -190,50 +177,39 @@ module cpu_core(
         memwb_forward_valid && memwb_rd == idex_rs2 ? memwb_data :
         idex_rs2_data;
 
-    // --- ALU 输入选择 ---
-    wire [31:0] alu_a = idex_alua_sel ? ex_rs1_forward : idex_pc;
-    wire [31:0] alu_b = idex_alub_sel ? ex_rs2_forward : idex_ext;
-
-    // --- ALU ---
+    wire [31:0] alu_a = idex_alua_sel ? idex_pc : ex_rs1_forward;
+    wire [31:0] alu_b = idex_alub_sel ? idex_ext : ex_rs2_forward;
     wire        alu_br;
     wire [31:0] alu_c;
     wire        mul_div_busy;
     wire        is_mul_div_ex = idex_is_mul | idex_is_div;
+    wire        mul_div_start = idex_valid && is_mul_div_ex &&
+                                !idex_md_started;
 
     ALU U_ALU (
-        .rst  (cpu_rst),
-        .clk  (cpu_clk),
-        .op   (idex_alu_op),
-        .a    (alu_a),
-        .b    (alu_b),
-        .c    (alu_c),
-        .br   (alu_br),
-        .busy (mul_div_busy)
+        .rst      (cpu_rst),
+        .clk      (cpu_clk),
+        .md_start (mul_div_start),
+        .op       (idex_alu_op),
+        .a        (alu_a),
+        .b        (alu_b),
+        .c        (alu_c),
+        .br       (alu_br),
+        .busy     (mul_div_busy)
     );
 
-    // --- 前递数据 (EX/MEM → EX 直通, 供下一指令旁路) ---
     wire [31:0] ex_pc4 = idex_pc4;
     wire [31:0] ex_forward_data =
         idex_rf_wsel == `WB_PC4 ? ex_pc4 :
         idex_rf_wsel == `WB_EXT ? idex_ext :
                                   alu_c;
-
-    // --- 跳转目标 ---
-    // JIRL: target = alu_c (rj + sext(offs16)), 低位置零确保对齐
-    // 分支/直接跳转: target = pc + sext(offset)
     wire [31:0] ex_target =
-        idex_npc_op == `NPC_JR ? (alu_c & 32'hFFFF_FFFE) :
-                                 (idex_pc + idex_ext);
-
-    // --- 跳转条件 ---
+        idex_npc_op == `NPC_JALR ? (alu_c & 32'hFFFF_FFFE) :
+                                   (idex_pc + idex_ext);
     wire ex_redirect_raw = idex_valid &&
                            (idex_npc_op == `NPC_JMP ||
-                            idex_npc_op == `NPC_JR  ||
-                           (idex_npc_op == `NPC_BRCH && alu_br));
-
-    // =========================================================================
-    // MEM 阶段 — 访存
-    // =========================================================================
+                            idex_npc_op == `NPC_JALR ||
+                           (idex_npc_op == `NPC_BRA && alu_br));
 
     wire [ 3:0] mem_da_ren;
     wire [31:0] mem_da_addr;
@@ -266,35 +242,21 @@ module cpu_core(
                     mem_is_store ? daccess_wresp : 1'b1;
     wire mem_wait = mem_is_access && !mem_done;
 
-    // 访存请求只发一次脉冲 (mem_req_sent 门控)
     assign daccess_ren   = mem_is_load  && !mem_req_sent ? mem_da_ren   : 4'h0;
     assign daccess_wen   = mem_is_store && !mem_req_sent ? mem_da_wen   : 4'h0;
     assign daccess_addr  = mem_da_addr;
     assign daccess_wdata = mem_da_wdata;
 
-    // =========================================================================
-    // 流水线控制
-    // =========================================================================
-
-    // 乘除法停顿: EX 阶段有乘除法且未完成
     wire mul_div_wait = idex_valid && is_mul_div_ex &&
                         (!idex_md_started || mul_div_busy);
-
-    // Load-use 停顿: ID 需要的寄存器正被 EX 阶段的 load 写
     wire load_use_stall = ifid_valid && idex_valid &&
                           idex_rf_we && idex_rf_wsel == `WB_RAM &&
                           idex_rd != 5'h0 &&
                          ((id_rs1_used && id_rs1 == idex_rd) ||
                           (id_rs2_used && id_rs2 == idex_rd));
-
-    // 跳转生效 (等待访存/乘除完成后才执行)
     wire ex_redirect = ex_redirect_raw && !mem_wait && !mul_div_wait;
-
-    // 前端阻塞条件
     wire front_stop = mem_wait || mul_div_wait || load_use_stall ||
                       redirect_pending;
-
-    // 取指接口控制
     wire fetch_can_replace = !fetch_outstanding || ifetch_valid;
     wire issue_redirect = ex_redirect && fetch_can_replace;
     wire issue_pending_redirect = redirect_pending && fetch_can_replace;
@@ -309,15 +271,10 @@ module cpu_core(
                          issue_pending_redirect ? redirect_target :
                                                   fetch_pc;
 
-    // =========================================================================
-    // 流水线寄存器更新
-    // =========================================================================
-
-    // --- Fetch: PC + 请求追踪 ---
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
-            fetch_pc          <= `PC_INIT_VAL;
-            req_pc_q          <= `PC_INIT_VAL;
+            fetch_pc         <= `PC_INIT_VAL;
+            req_pc_q         <= `PC_INIT_VAL;
             fetch_outstanding <= 1'b0;
         end else if (ifetch_req) begin
             req_pc_q          <= ifetch_addr;
@@ -328,7 +285,6 @@ module cpu_core(
         end
     end
 
-    // --- 跳转挂起 (取指接口忙时暂存跳转目标) ---
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
             redirect_pending <= 1'b0;
@@ -341,7 +297,6 @@ module cpu_core(
         end
     end
 
-    // --- IF/ID: 取指缓冲 + 有效位 ---
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
             fetch_buf_valid <= 1'b0;
@@ -351,19 +306,16 @@ module cpu_core(
             ifid_pc         <= 32'h0;
             ifid_inst       <= NOP;
         end else if (ex_redirect || redirect_pending) begin
-            // 跳转冲刷 IF/ID
             fetch_buf_valid <= 1'b0;
             ifid_valid      <= 1'b0;
             ifid_inst       <= NOP;
         end else if (front_stop) begin
-            // 前端阻塞: 取到的指令暂存入 fetch_buf
             if (ifetch_valid && !fetch_buf_valid) begin
                 fetch_buf_valid <= 1'b1;
                 fetch_buf_pc    <= req_pc_q;
                 fetch_buf_inst  <= ifetch_inst;
             end
         end else if (fetch_buf_valid) begin
-            // fetch_buf 有缓存 → 先消费缓存
             ifid_valid <= 1'b1;
             ifid_pc    <= fetch_buf_pc;
             ifid_inst  <= fetch_buf_inst;
@@ -375,14 +327,12 @@ module cpu_core(
                 fetch_buf_valid <= 1'b0;
             end
         end else begin
-            // 正常流动: 取指结果直通 IF/ID
             ifid_valid <= ifetch_valid;
             ifid_pc    <= req_pc_q;
             ifid_inst  <= ifetch_valid ? ifetch_inst : NOP;
         end
     end
 
-    // --- ID/EX ---
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
             idex_valid      <= 1'b0;
@@ -398,8 +348,8 @@ module cpu_core(
             idex_npc_op     <= `NPC_PC4;
             idex_rf_wsel    <= `WB_ALU;
             idex_alu_op     <= `ALU_ADD;
-            idex_alua_sel   <= `ALUA_R1;
-            idex_alub_sel   <= `ALUB_R2;
+            idex_alua_sel   <= `ALU_A_RS1;
+            idex_alub_sel   <= `ALU_B_RS2;
             idex_ram_rop    <= `RAM_EXT_N;
             idex_ram_wop    <= `RAM_WE_N;
             idex_rf_we      <= 1'b0;
@@ -407,26 +357,20 @@ module cpu_core(
             idex_is_div     <= 1'b0;
             idex_md_started <= 1'b0;
         end else if (mem_wait) begin
-            // 访存等待: ID/EX 保持不变, 但 WB 旁路更新
             idex_valid <= idex_valid;
             if (wb_rf_we && wb_rd == idex_rs1)
                 idex_rs1_data <= wb_data;
             if (wb_rf_we && wb_rd == idex_rs2)
                 idex_rs2_data <= wb_data;
         end else if (mul_div_wait) begin
-            // 乘除等待: ID/EX 保持不变, 标记已启动
-            // 第一拍后把 alu_op 改为 ADD, 使 ALU 的 start 只持续 1 拍脉冲
-            // (ALU 的 mul_flag/div_flag 是组合逻辑电平敏感, 持续高会导致反复重启)
             idex_valid <= idex_valid;
             if (wb_rf_we && wb_rd == idex_rs1)
                 idex_rs1_data <= wb_data;
             if (wb_rf_we && wb_rd == idex_rs2)
                 idex_rs2_data <= wb_data;
-            if (idex_md_started)
-                idex_alu_op <= `ALU_ADD;
-            idex_md_started <= 1'b1;
+            if (mul_div_start)
+                idex_md_started <= 1'b1;
         end else if (ex_redirect || load_use_stall) begin
-            // 跳转或 load-use: 插入 NOP 气泡
             idex_valid      <= 1'b0;
             idex_inst       <= NOP;
             idex_rf_we      <= 1'b0;
@@ -436,7 +380,6 @@ module cpu_core(
             idex_is_div     <= 1'b0;
             idex_md_started <= 1'b0;
         end else begin
-            // 正常流动
             idex_valid      <= ifid_valid;
             idex_pc         <= ifid_pc;
             idex_inst       <= ifid_inst;
@@ -461,7 +404,6 @@ module cpu_core(
         end
     end
 
-    // --- EX/MEM ---
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
             exmem_valid        <= 1'b0;
@@ -477,15 +419,12 @@ module cpu_core(
             exmem_rf_we        <= 1'b0;
             mem_req_sent       <= 1'b0;
         end else if (mem_wait) begin
-            // 访存等待: 标记请求已发出
             if ((|daccess_ren) || (|daccess_wen))
                 mem_req_sent <= 1'b1;
         end else if (mul_div_wait) begin
-            // 乘除等待: 清空 EX/MEM
             exmem_valid  <= 1'b0;
             mem_req_sent <= 1'b0;
         end else begin
-            // 正常流动
             exmem_valid        <= idex_valid;
             exmem_pc           <= idex_pc;
             exmem_inst         <= idex_inst;
@@ -501,7 +440,6 @@ module cpu_core(
         end
     end
 
-    // --- MEM/WB ---
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
             memwb_valid <= 1'b0;
@@ -511,11 +449,9 @@ module cpu_core(
             memwb_rd    <= 5'h0;
             memwb_rf_we <= 1'b0;
         end else if (mem_wait) begin
-            // 访存等待: 不更新 WB (防止错误写回)
             memwb_valid <= 1'b0;
             memwb_rf_we <= 1'b0;
         end else begin
-            // 正常流动
             memwb_valid <= exmem_valid;
             memwb_pc    <= exmem_pc;
             memwb_inst  <= exmem_inst;
@@ -525,9 +461,12 @@ module cpu_core(
         end
     end
 
-    // =========================================================================
-    // Debug 信号 (verilator public, cdp-tests 通过层级访问)
-    // =========================================================================
+    wire [31:0] pc = req_pc_q;
+    wire        rf_we1 = wb_rf_we;
+    wire [ 4:0] rf_wR = wb_rd;
+    wire [31:0] rf_wD = wb_data;
+    wire        inst_finished = memwb_valid;
+
 `ifdef RUN_TRACE
     wire [31:0] debug_wb_pc     /* verilator public */;
     wire        debug_wb_rf_we  /* verilator public */;
@@ -538,6 +477,9 @@ module cpu_core(
     wire [ 3:0] debug_mem_we    /* verilator public */;
     wire [31:0] debug_mem_waddr /* verilator public */;
     wire [31:0] debug_mem_wdata /* verilator public */;
+`else
+    assign debug_wb_valid = memwb_valid;
+    assign debug_wb_inst  = memwb_inst;
 `endif
 
     assign debug_wb_pc    = memwb_pc;
