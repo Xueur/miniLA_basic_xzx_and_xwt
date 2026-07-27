@@ -80,9 +80,9 @@ module axi_bus #(
     wire ic_has_rd    = ic_cpu_ren;
     wire dc_rd_cached = dc_has_rd && (dc_cpu_raddr[31:16] != 16'hFFFF);
 
-    // Ready — only in IDLE. DCache priority.
+    // Ready — only in IDLE. DCache always priority over IC.
     always @(*) begin
-        ic_dev_rrdy = (r_state == R_IDLE) && !dc_rd_cached && !dc_has_rd;
+        ic_dev_rrdy = (r_state == R_IDLE) && !dc_has_rd;
         dc_dev_rrdy = (r_state == R_IDLE);
     end
 
@@ -91,21 +91,30 @@ module axi_bus #(
         ic_dev_rvalid = 1'b0;
         dc_dev_rvalid = 1'b0;
         if ((r_state == R_WAIT_R || r_state == R_PACKAGE) && m_axi_rvalid && m_axi_rlast) begin
-            if (rd_for_icache)
+            if (rd_for_icache) begin
                 ic_dev_rvalid = 1'b1;
-            else
+                $display("[AXI_R] VALID→IC rdata=%08x", m_axi_rdata);
+            end else begin
                 dc_dev_rvalid = 1'b1;
+                $display("[AXI_R] VALID→DC rdata=%08x", m_axi_rdata);
+            end
         end
     end
 
     always @(posedge aclk or posedge areset) begin
         if (areset) r_state <= R_IDLE;
-        else        r_state <= r_nstate;
+        else begin
+            r_state <= r_nstate;
+            if (r_state != r_nstate)
+                $display("[AXI_R] %d→%d dc_has=%d ic_has=%d dc_cached=%d w_idle=%d ar_rdy=%d r_vld=%d r_last=%d",
+                    r_state, r_nstate, dc_has_rd, ic_has_rd, dc_rd_cached, w_state==W_IDLE,
+                    m_axi_arready, m_axi_rvalid, m_axi_rlast);
+        end
     end
 
     always @(*) begin
         case (r_state)
-            R_IDLE:        if ((dc_rd_cached || dc_has_rd || ic_has_rd) && !w_busy) r_nstate = R_SEND_RREQ; else r_nstate = R_IDLE;
+            R_IDLE:        if ((dc_has_rd || ic_has_rd) && w_state == W_IDLE) r_nstate = R_SEND_RREQ; else r_nstate = R_IDLE;
             R_SEND_RREQ:   r_nstate = m_axi_arready ? R_WAIT_R : R_SEND_RREQ;
             R_WAIT_R:      r_nstate = m_axi_rvalid ? (m_axi_rlast ? R_IDLE : R_PACKAGE) : R_WAIT_R;
             R_PACKAGE:     r_nstate = m_axi_rvalid ? (m_axi_rlast ? R_IDLE : R_PACKAGE) : R_PACKAGE;
@@ -118,15 +127,12 @@ module axi_bus #(
             rd_for_icache <= 1'b0;
             rd_burst_len  <= 8'd0;
         end else if (r_state == R_IDLE) begin
-            if (dc_rd_cached) begin
+            if (dc_has_rd) begin
                 rd_for_icache <= 1'b0;
-                rd_burst_len  <= DC_BLK_LEN;
+                rd_burst_len  <= dc_rd_cached ? DC_BLK_LEN : 8'd1;
             end else if (ic_has_rd) begin
                 rd_for_icache <= 1'b1;
                 rd_burst_len  <= IC_BLK_LEN;
-            end else if (dc_has_rd) begin
-                rd_for_icache <= 1'b0;
-                rd_burst_len  <= 8'd1;
             end
         end
     end
@@ -140,19 +146,16 @@ module axi_bus #(
             m_axi_arsize  <= 3'd2;
             m_axi_arburst <= 2'b01;
         end else begin
-            if (r_state == R_IDLE && (dc_rd_cached || ic_has_rd || dc_has_rd)) begin
+            if (r_state == R_IDLE && (dc_has_rd || ic_has_rd)) begin
                 m_axi_arvalid <= 1'b1;
                 m_axi_arsize  <= 3'd2;
                 m_axi_arburst <= 2'b01;
-                if (dc_rd_cached) begin
-                    m_axi_araddr <= {dc_cpu_raddr[31:4], 4'b0000};
-                    m_axi_arlen  <= DC_BLK_LEN - 1;
-                end else if (ic_has_rd) begin
+                if (dc_has_rd) begin
+                    m_axi_araddr <= dc_rd_cached ? {dc_cpu_raddr[31:4], 4'b0000} : dc_cpu_raddr;
+                    m_axi_arlen  <= dc_rd_cached ? (DC_BLK_LEN - 1) : 8'd0;
+                end else begin
                     m_axi_araddr <= (IC_BLK_LEN > 1) ? {ic_cpu_raddr[31:4], 4'b0000} : ic_cpu_raddr;
                     m_axi_arlen  <= IC_BLK_LEN - 1;
-                end else begin
-                    m_axi_araddr <= dc_cpu_raddr;
-                    m_axi_arlen  <= 8'd0;
                 end
             end else if (m_axi_arready)
                 m_axi_arvalid <= 1'b0;
@@ -189,9 +192,6 @@ module axi_bus #(
                 ic_dev_rdata <= {m_axi_rdata, rd_buf[2], rd_buf[1], rd_buf[0]};
             else
                 dc_dev_rdata <= {m_axi_rdata, rd_buf[2], rd_buf[1], rd_buf[0]};
-            $display("[AXI] RD done: %s addr=%08x d0=%08x d1=%08x d2=%08x d3=%08x",
-                rd_for_icache ? "IC" : "DC", m_axi_araddr,
-                rd_buf[0], rd_buf[1], rd_buf[2], m_axi_rdata);
         end
     end
 
@@ -211,12 +211,12 @@ module axi_bus #(
     reg        w_done;       // W handshake completed
     reg        aw_done;      // AW handshake completed
 
-    wire r_busy = (r_state != R_IDLE);
-    wire w_busy = (w_state != W_IDLE);
-
     always @(*) begin
         dc_dev_wrdy = (w_state == W_IDLE) && !dc_rd_cached;
     end
+
+    wire r_busy = (r_state != R_IDLE);
+    wire w_busy = (w_state != W_IDLE);
 
     always @(posedge aclk or posedge areset) begin
         if (areset) w_state <= W_IDLE;
@@ -252,7 +252,6 @@ module axi_bus #(
             case (w_state)
                 W_IDLE: if (|dc_cpu_wen) begin
                     w_addr_r <= dc_cpu_waddr; w_wen_r <= dc_cpu_wen; w_data_r <= dc_cpu_wdata;
-                    $display("[AXI] WR REQ detected wen=%x addr=%x data=%x", dc_cpu_wen, dc_cpu_waddr, dc_cpu_wdata);
                 end
                 W_SEND_WREQ: begin
                     m_axi_awaddr  <= w_addr_r;  m_axi_awlen <= 8'd0;

@@ -123,11 +123,12 @@ module miniLA_SoC(
     );
 
     // Initialize bram_axi — load test binary into BRAM
-    initial begin : bram_init
+    initial begin
         integer fd, i, j;
         reg [31:0] tmp [0:8191];
         fd = $fopen("meminit.bin", "r");
         if (fd) begin
+            $display("[INFO] bram_axi loading meminit.bin");
             for (i = 0; i < 8192; i = i + 256)
                 for (j = i; j < i + 256 && j < 8192; j = j + 1)
                     tmp[j] = 0;
@@ -136,6 +137,9 @@ module miniLA_SoC(
             for (i = 0; i < 8192; i = i + 256)
                 for (j = i; j < i + 256 && j < 8192; j = j + 1)
                     U_bram.mem[j] = {tmp[j][7:0], tmp[j][15:8], tmp[j][23:16], tmp[j][31:24]};
+            $display("[INFO] bram_axi loaded meminit.bin ok");
+            $display("[INIT] mem[0]=%08x mem[1]=%08x mem[2]=%08x mem[3]=%08x mem[4]=%08x",
+                U_bram.mem[0], U_bram.mem[1], U_bram.mem[2], U_bram.mem[3], U_bram.mem[4]);
         end else begin
             $display("[ERROR] Cannot open meminit.bin!");
         end

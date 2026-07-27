@@ -229,7 +229,6 @@ module DCache(
                         cpu_wen   <= wr_wen_r;
                         cpu_waddr <= wr_addr_r;
                         cpu_wdata <= wr_data_r;
-                        $display("[DCache] WR issue addr=%x data=%x wen=%x", wr_addr_r, wr_data_r, wr_wen_r);
                     end
                 end
                 W_RESP: begin
@@ -344,6 +343,10 @@ module DCache(
             cpu_waddr  <= 32'h0;
             cpu_wdata  <= 32'h0;
         end else begin
+            // DEBUG
+            if (|data_wen) $display("[DC_W] REQ we=%b addr=%08x data=%08x state=%d rd=%d",
+                data_wen, data_addr, data_wdata, w_state, dev_wrdy);
+            if (w_state == W_STAT1 && wr_resp_d) $display("[DC_W] RESP sent, going IDLE");
             case (w_state)
                 W_IDLE: begin
                     data_wresp <= 1'b0;

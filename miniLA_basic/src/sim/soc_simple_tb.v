@@ -6,11 +6,10 @@ module soc_simple_tb();
 
     reg         clk  = 1;
     reg         rstn = 0;
-    reg  [15:0] switch = 16'h1234;
-    wire [15:0] led;
+    reg  [23:0] switch = 24'h123456;
+    wire [23:0] led;
     wire [ 7:0] dig_en;
     wire [ 7:0] dig_seg;
-    wire [ 7:0] dig_seg1;
     wire        tx;
     wire        rx = 1;
 
@@ -31,7 +30,6 @@ module soc_simple_tb();
         .led        (led),
         .dig_en     (dig_en),
         .dig_seg    (dig_seg),
-        .dig_seg1   (dig_seg1),
         .rx         (rx),
         .tx         (tx)
 
