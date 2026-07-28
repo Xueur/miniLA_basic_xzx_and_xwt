@@ -23,31 +23,33 @@ volatile unsigned int *uart_ctrl_reg = (volatile unsigned int*)(UART_BASE + 0xC)
 void uart_init()
 {
     // TODO 1: 清空 RX FIFO 和 TX FIFO
+    *uart_ctrl_reg = 0x3;   // bit1=clear RX FIFO, bit0=clear TX FIFO
 }
 
 void uart_putc(char c)
 {
-    while (/* TODO 2 */);               // 如果 TX FIFO 已满，则等待已有字符发送完毕
+    while (*uart_stat_reg & 0x8);       // TODO 2: 如果 TX FIFO 已满(bit3=1)，则等待
     *uart_tx_fifo = (unsigned int)c;    // 写入新的字符到TX FIFO
 }
 
 char uart_getc(void)
 {
-    while (/* TODO 3 */);               // 如果 RX FIFO 为空, 则等待接收上位机的字符
+    while (!(*uart_stat_reg & 0x1));    // TODO 3: 如果 RX FIFO 为空(bit0=0)，则等待
     return *uart_rx_fifo;               // 从RX FIFO读取一个字符
 }
 
 void print_str(char* str)
 {
     // TODO 4: 调用 uart_putc 函数实现字符串打印
+    while (*str) uart_putc(*str++);
 }
 
 int main()
 {
     uart_init();
 
-    // TODO 5: 把下面的 “20XXXXXXXX” 改成你的学号
-    print_str("20XXXXXXXX Test #0 - UART simple test:\n\r");
+    // TODO 5: 把下面的 “2024311497” 改成你的学号
+    print_str("2024311497 Test #0 - UART simple test:\n\r");
     print_str("<Phase 0> - Output test:\n\r");
     print_str("Hello World!\n\r");
 

@@ -10,8 +10,8 @@ int main()
 {
     uart_init();
 
-    // TODO 1: 把下面的 “20XXXXXXXX” 改成你的学号
-    printf("20XXXXXXXX Test #1 - Formatted input/output test:\n");
+    // TODO 1: 把下面的 “2024311497” 改成你的学号
+    printf("2024311497 Test #1 - Formatted input/output test:\n");
     
     /****** Phase 0 ******/
     printf("<Phase 0> - Formatted output test:\n");

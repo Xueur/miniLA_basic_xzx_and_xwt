@@ -34,11 +34,14 @@ static int rx_buf_ptr = 0;          // 当前读取到的缓冲区的位置
 void uart_init()
 {
     // TODO 2: 清空 RX FIFO 和 TX FIFO、复位 rx_buf_cnt 和 rx_buf_ptr
+    *uart_ctrl_reg = 0x3;   // bit1=clear RX FIFO, bit0=clear TX FIFO
+    rx_buf_cnt = 0;
+    rx_buf_ptr = 0;
 }
 
 void uart_putc(char c)
 {
-    while (/* TODO 3 */);               // 如果 TX FIFO 已满，则等待已有字符发送完毕
+    while (*uart_stat_reg & 0x8);       // TODO 3: 如果 TX FIFO 已满(bit3=1)，则等待
     *uart_tx_fifo = (unsigned int)c;    // 写入新的字符到TX FIFO
 }
 
@@ -49,10 +52,10 @@ static char uart_getc(void)
         rx_buf_ptr = 0;
         rx_buf_cnt = 0;
 
-        while (/* TODO 4 */);    // 如果 RX FIFO 为空, 则等待接收上位机的字符
+        while (!(*uart_stat_reg & 0x1));    // TODO 4: 如果 RX FIFO 为空(bit0=0), 则等待
 
         // 只要 RX FIFO 非空且 rx_buf 未满，则不断读取 RX FIFO 中的字符到 rx_buf 中
-        while (!(/* TODO 5 */) && rx_buf_cnt < RX_FIFO_SIZE)
+        while ((*uart_stat_reg & 0x1) && rx_buf_cnt < RX_FIFO_SIZE)  // TODO 5: RX FIFO 非空(bit0=1)
             rx_buf[rx_buf_cnt++] = *uart_rx_fifo;
     }
 
