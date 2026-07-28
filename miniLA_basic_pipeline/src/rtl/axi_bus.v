@@ -2,12 +2,10 @@
 
 `include "defines.vh"
 
-// ================================================================
-// axi_bus — AXI4 Bus Controller
-//   Read:  IDLE → SEND_RREQ → WAIT_R → PACKAGE → IDLE
-//   Write: IDLE → SEND_WREQ → WAIT_AW → WAIT_W → WAIT_B → IDLE
+// AXI4 Bus Controller — ported from reference miniRV axi_master
+//   Read:  IDLE → RADDR → RDATA → IDLE
+//   Write: IDLE → WRITE → WRESP → IDLE
 //   Priority: DCache > ICache
-// ================================================================
 
 module axi_bus #(
     parameter IC_BLK_LEN = `IC_BLK_LEN,
@@ -17,266 +15,184 @@ module axi_bus #(
     input  wire         areset,
 
     // ---- ICache Interface ----
-    output reg          ic_dev_rrdy,
+    output wire         ic_dev_rrdy,
     input  wire         ic_cpu_ren,
     input  wire [31:0]  ic_cpu_raddr,
     output reg          ic_dev_rvalid,
     output reg  [127:0] ic_dev_rdata,
 
     // ---- DCache Interface ----
-    output reg          dc_dev_wrdy,
+    output wire         dc_dev_wrdy,
     input  wire [ 3:0]  dc_cpu_wen,
     input  wire [31:0]  dc_cpu_waddr,
     input  wire [31:0]  dc_cpu_wdata,
-    output reg          dc_dev_rrdy,
+    output wire         dc_dev_rrdy,
     input  wire         dc_cpu_ren,
     input  wire [31:0]  dc_cpu_raddr,
     output reg          dc_dev_rvalid,
     output reg  [127:0] dc_dev_rdata,
 
     // ---- AXI4 Master Interface ----
-    output reg  [31:0]  m_axi_awaddr,
-    output reg  [ 7:0]  m_axi_awlen,
-    output reg  [ 2:0]  m_axi_awsize,
-    output reg  [ 1:0]  m_axi_awburst,
+    output wire [31:0]  m_axi_awaddr,
+    output wire [ 7:0]  m_axi_awlen,
+    output wire [ 2:0]  m_axi_awsize,
+    output wire [ 1:0]  m_axi_awburst,
     input  wire         m_axi_awready,
-    output reg          m_axi_awvalid,
-    output reg  [31:0]  m_axi_wdata,
+    output wire         m_axi_awvalid,
+    output wire [31:0]  m_axi_wdata,
     input  wire         m_axi_wready,
-    output reg  [ 3:0]  m_axi_wstrb,
-    output reg          m_axi_wlast,
-    output reg          m_axi_wvalid,
-    output reg          m_axi_bready,
+    output wire [ 3:0]  m_axi_wstrb,
+    output wire         m_axi_wlast,
+    output wire         m_axi_wvalid,
+    output wire         m_axi_bready,
     input  wire [ 1:0]  m_axi_bresp,
     input  wire         m_axi_bvalid,
-    output reg  [31:0]  m_axi_araddr,
-    output reg  [ 7:0]  m_axi_arlen,
-    output reg  [ 2:0]  m_axi_arsize,
-    output reg  [ 1:0]  m_axi_arburst,
+    output wire [31:0]  m_axi_araddr,
+    output wire [ 7:0]  m_axi_arlen,
+    output wire [ 2:0]  m_axi_arsize,
+    output wire [ 1:0]  m_axi_arburst,
     input  wire         m_axi_arready,
-    output reg          m_axi_arvalid,
+    output wire         m_axi_arvalid,
     input  wire [31:0]  m_axi_rdata,
-    output reg          m_axi_rready,
+    output wire         m_axi_rready,
     input  wire [ 1:0]  m_axi_rresp,
     input  wire         m_axi_rlast,
     input  wire         m_axi_rvalid
 );
 
-    // ============================================================
-    // Read State Machine: IDLE → SEND_RREQ → WAIT_R → PACKAGE
-    // ============================================================
-    localparam R_IDLE       = 2'd0;
-    localparam R_SEND_RREQ  = 2'd1;
-    localparam R_WAIT_R     = 2'd2;
-    localparam R_PACKAGE    = 2'd3;
+    localparam ST_IDLE   = 3'd0;
+    localparam ST_RADDR  = 3'd1;
+    localparam ST_RDATA  = 3'd2;
+    localparam ST_WRITE  = 3'd3;
+    localparam ST_WRESP  = 3'd4;
 
-    reg [1:0] r_state, r_nstate;
-    reg       rd_for_icache;
-    reg [7:0] rd_burst_len;
-    reg [7:0] rd_beat_cnt;
-    reg [31:0] rd_buf [0:7];
+    reg [2:0] state;
+    reg [31:0] read_addr;
+    reg        read_is_dc;
+    reg [1:0]  read_beat;
+    reg [127:0] read_block;
 
-    wire dc_has_rd    = dc_cpu_ren;
-    wire ic_has_rd    = ic_cpu_ren;
-    wire dc_rd_cached = dc_has_rd && (dc_cpu_raddr[31:16] != 16'hFFFF);
+    reg [31:0] write_addr;
+    reg [31:0] write_data;
+    reg [3:0]  write_strb;
+    reg        aw_done;
+    reg        w_done;
 
-    // Ready — only in IDLE. DCache always priority over IC.
-    always @(*) begin
-        ic_dev_rrdy = (r_state == R_IDLE) && !dc_has_rd;
-        dc_dev_rrdy = (r_state == R_IDLE);
-    end
+    wire dc_request = dc_cpu_ren || (|dc_cpu_wen);
 
-    // Valid — pulsed on last beat
-    always @(*) begin
-        ic_dev_rvalid = 1'b0;
-        dc_dev_rvalid = 1'b0;
-        if ((r_state == R_WAIT_R || r_state == R_PACKAGE) && m_axi_rvalid && m_axi_rlast) begin
-            if (rd_for_icache) begin
-                ic_dev_rvalid = 1'b1;
-                $display("[AXI_R] VALID→IC rdata=%08x", m_axi_rdata);
-            end else begin
-                dc_dev_rvalid = 1'b1;
-                $display("[AXI_R] VALID→DC rdata=%08x", m_axi_rdata);
-            end
-        end
-    end
+    assign dc_dev_rrdy = state == ST_IDLE;
+    assign dc_dev_wrdy = state == ST_IDLE;
+    assign ic_dev_rrdy = state == ST_IDLE && !dc_request;
 
-    always @(posedge aclk or posedge areset) begin
-        if (areset) r_state <= R_IDLE;
-        else begin
-            r_state <= r_nstate;
-            if (r_state != r_nstate)
-                $display("[AXI_R] %d→%d dc_has=%d ic_has=%d dc_cached=%d w_idle=%d ar_rdy=%d r_vld=%d r_last=%d",
-                    r_state, r_nstate, dc_has_rd, ic_has_rd, dc_rd_cached, w_state==W_IDLE,
-                    m_axi_arready, m_axi_rvalid, m_axi_rlast);
-        end
-    end
+    // ---- AXI4 Read Channel ----
+    assign m_axi_araddr  = {read_addr[31:4], 4'h0};
+    assign m_axi_arlen   = 8'd3;           // 4-beat burst (128 bits)
+    assign m_axi_arsize  = 3'd2;           // 4 bytes per beat
+    assign m_axi_arburst = 2'b01;          // INCR
+    assign m_axi_arvalid = state == ST_RADDR;
+    assign m_axi_rready  = state == ST_RDATA;
 
-    always @(*) begin
-        case (r_state)
-            R_IDLE:        if ((dc_has_rd || ic_has_rd) && w_state == W_IDLE) r_nstate = R_SEND_RREQ; else r_nstate = R_IDLE;
-            R_SEND_RREQ:   r_nstate = m_axi_arready ? R_WAIT_R : R_SEND_RREQ;
-            R_WAIT_R:      r_nstate = m_axi_rvalid ? (m_axi_rlast ? R_IDLE : R_PACKAGE) : R_WAIT_R;
-            R_PACKAGE:     r_nstate = m_axi_rvalid ? (m_axi_rlast ? R_IDLE : R_PACKAGE) : R_PACKAGE;
-            default:       r_nstate = R_IDLE;
-        endcase
-    end
+    // ---- AXI4 Write Channel ----
+    assign m_axi_awaddr  = write_addr;
+    assign m_axi_awlen   = 8'd0;           // single beat
+    assign m_axi_awsize  = 3'd2;
+    assign m_axi_awburst = 2'b01;
+    assign m_axi_awvalid = state == ST_WRITE && !aw_done;
+
+    assign m_axi_wdata   = write_data;
+    assign m_axi_wstrb   = write_strb;
+    assign m_axi_wlast   = 1'b1;
+    assign m_axi_wvalid  = state == ST_WRITE && !w_done;
+    assign m_axi_bready  = state == ST_WRESP;
 
     always @(posedge aclk or posedge areset) begin
         if (areset) begin
-            rd_for_icache <= 1'b0;
-            rd_burst_len  <= 8'd0;
-        end else if (r_state == R_IDLE) begin
-            if (dc_has_rd) begin
-                rd_for_icache <= 1'b0;
-                rd_burst_len  <= dc_rd_cached ? DC_BLK_LEN : 8'd1;
-            end else if (ic_has_rd) begin
-                rd_for_icache <= 1'b1;
-                rd_burst_len  <= IC_BLK_LEN;
-            end
-        end
-    end
-
-    // AR channel
-    always @(posedge aclk or posedge areset) begin
-        if (areset) begin
-            m_axi_arvalid <= 1'b0;
-            m_axi_araddr  <= 32'h0;
-            m_axi_arlen   <= 8'd0;
-            m_axi_arsize  <= 3'd2;
-            m_axi_arburst <= 2'b01;
+            state <= ST_IDLE;
+            read_addr   <= 32'h0;
+            read_is_dc  <= 1'b0;
+            read_beat   <= 2'h0;
+            read_block  <= 128'h0;
+            write_addr  <= 32'h0;
+            write_data  <= 32'h0;
+            write_strb  <= 4'h0;
+            aw_done     <= 1'b0;
+            w_done      <= 1'b0;
+            ic_dev_rvalid <= 1'b0;
+            ic_dev_rdata  <= 128'h0;
+            dc_dev_rvalid <= 1'b0;
+            dc_dev_rdata  <= 128'h0;
         end else begin
-            if (r_state == R_IDLE && (dc_has_rd || ic_has_rd)) begin
-                m_axi_arvalid <= 1'b1;
-                m_axi_arsize  <= 3'd2;
-                m_axi_arburst <= 2'b01;
-                if (dc_has_rd) begin
-                    m_axi_araddr <= dc_rd_cached ? {dc_cpu_raddr[31:4], 4'b0000} : dc_cpu_raddr;
-                    m_axi_arlen  <= dc_rd_cached ? (DC_BLK_LEN - 1) : 8'd0;
-                end else begin
-                    m_axi_araddr <= (IC_BLK_LEN > 1) ? {ic_cpu_raddr[31:4], 4'b0000} : ic_cpu_raddr;
-                    m_axi_arlen  <= IC_BLK_LEN - 1;
-                end
-            end else if (m_axi_arready)
-                m_axi_arvalid <= 1'b0;
-        end
-    end
+            ic_dev_rvalid <= 1'b0;
+            dc_dev_rvalid <= 1'b0;
 
-    // R channel — ready in WAIT_R / PACKAGE
-    always @(*) m_axi_rready = (r_state == R_WAIT_R) || (r_state == R_PACKAGE);
-
-    // Beat counter and data accumulation
-    always @(posedge aclk or posedge areset) begin
-        if (areset) begin
-            rd_beat_cnt <= 8'd0;
-        end else begin
-            if (r_state == R_IDLE)
-                rd_beat_cnt <= 8'd0;
-            else if (m_axi_rvalid && m_axi_rready)
-                rd_beat_cnt <= rd_beat_cnt + 8'd1;
-        end
-    end
-
-    always @(posedge aclk) begin
-        if (m_axi_rvalid && m_axi_rready)
-            rd_buf[rd_beat_cnt] <= m_axi_rdata;
-    end
-
-    // Output data — use m_axi_rdata for last beat directly, avoids race with rd_buf[3]
-    always @(posedge aclk or posedge areset) begin
-        if (areset) begin
-            ic_dev_rdata <= 128'd0;
-            dc_dev_rdata <= 128'd0;
-        end else if ((r_state == R_WAIT_R || r_state == R_PACKAGE) && m_axi_rvalid && m_axi_rlast) begin
-            if (rd_for_icache)
-                ic_dev_rdata <= {m_axi_rdata, rd_buf[2], rd_buf[1], rd_buf[0]};
-            else
-                dc_dev_rdata <= {m_axi_rdata, rd_buf[2], rd_buf[1], rd_buf[0]};
-        end
-    end
-
-    // ============================================================
-    // Write State Machine: IDLE → SEND_WREQ → WAIT_AW → WAIT_W → WAIT_B
-    // ============================================================
-    localparam W_IDLE       = 3'd0;
-    localparam W_SEND_WREQ  = 3'd1;
-    localparam W_WAIT_AW    = 3'd2;   // W already done, waiting for AW
-    localparam W_WAIT_W     = 3'd3;   // AW already done, waiting for W
-    localparam W_WAIT_B     = 3'd4;
-
-    reg [2:0] w_state, w_nstate;
-    reg [31:0] w_addr_r;
-    reg [ 3:0] w_wen_r;
-    reg [31:0] w_data_r;
-    reg        w_done;       // W handshake completed
-    reg        aw_done;      // AW handshake completed
-
-    always @(*) begin
-        dc_dev_wrdy = (w_state == W_IDLE) && !dc_rd_cached;
-    end
-
-    wire r_busy = (r_state != R_IDLE);
-    wire w_busy = (w_state != W_IDLE);
-
-    always @(posedge aclk or posedge areset) begin
-        if (areset) w_state <= W_IDLE;
-        else        w_state <= w_nstate;
-    end
-
-    always @(*) begin
-        if (m_axi_bvalid) begin
-            w_nstate = W_IDLE;  // bvalid ends the write immediately, no matter which state
-        end else begin
-            case (w_state)
-                W_IDLE:      w_nstate = (|dc_cpu_wen) ? W_SEND_WREQ : W_IDLE;
-                W_SEND_WREQ: begin
-                    if (m_axi_awready && m_axi_wready)     w_nstate = W_IDLE;
-                    else if (m_axi_wready && !m_axi_awready) w_nstate = W_WAIT_AW;
-                    else if (m_axi_awready && !m_axi_wready) w_nstate = W_WAIT_W;
-                    else                                      w_nstate = W_SEND_WREQ;
-                end
-                W_WAIT_AW:   w_nstate = m_axi_awready ? W_IDLE : W_WAIT_AW;
-                W_WAIT_W:    w_nstate = m_axi_wready  ? W_IDLE : W_WAIT_W;
-                default:     w_nstate = W_IDLE;
-            endcase
-        end
-    end
-
-    always @(posedge aclk or posedge areset) begin
-        if (areset) begin
-            m_axi_awvalid <= 1'b0; m_axi_wvalid <= 1'b0; m_axi_wlast <= 1'b0;
-            m_axi_bready  <= 1'b0; m_axi_awaddr <= 32'h0; m_axi_awlen <= 8'd0;
-            m_axi_awsize  <= 3'd2; m_axi_awburst <= 2'b01; m_axi_wdata <= 32'h0;
-            m_axi_wstrb   <= 4'h0; w_done <= 1'b0; aw_done <= 1'b0;
-        end else begin
-            case (w_state)
-                W_IDLE: if (|dc_cpu_wen) begin
-                    w_addr_r <= dc_cpu_waddr; w_wen_r <= dc_cpu_wen; w_data_r <= dc_cpu_wdata;
-                end
-                W_SEND_WREQ: begin
-                    m_axi_awaddr  <= w_addr_r;  m_axi_awlen <= 8'd0;
-                    m_axi_awsize  <= 3'd2;      m_axi_awburst <= 2'b01;
-                    m_axi_awvalid <= 1'b1;      m_axi_wdata  <= w_data_r;
-                    m_axi_wstrb   <= w_wen_r;   m_axi_wlast  <= 1'b1;
-                    m_axi_wvalid  <= 1'b1;      m_axi_bready <= 1'b1;
-                    w_done <= 1'b0; aw_done <= 1'b0;
-                end
-                W_WAIT_AW: begin
-                    m_axi_wvalid <= 1'b0;
-                    m_axi_bready <= 1'b1;
-                    if (m_axi_awready) m_axi_awvalid <= 1'b0;
-                end
-                W_WAIT_W: begin
-                    m_axi_awvalid <= 1'b0;
-                    m_axi_bready <= 1'b1;
-                    if (m_axi_wready) m_axi_wvalid <= 1'b0;
-                end
-                default: begin
-                    if (m_axi_bvalid) begin
-                        m_axi_bready <= 1'b0;
-                        m_axi_wlast  <= 1'b0;
+            case (state)
+                ST_IDLE: begin
+                    aw_done <= 1'b0;
+                    w_done  <= 1'b0;
+                    if (|dc_cpu_wen) begin
+                        write_addr <= dc_cpu_waddr;
+                        write_data <= dc_cpu_wdata;
+                        write_strb <= dc_cpu_wen;
+                        state <= ST_WRITE;
+                    end else if (dc_cpu_ren) begin
+                        read_addr  <= dc_cpu_raddr;
+                        read_is_dc <= 1'b1;
+                        state <= ST_RADDR;
+                    end else if (ic_cpu_ren) begin
+                        read_addr  <= ic_cpu_raddr;
+                        read_is_dc <= 1'b0;
+                        state <= ST_RADDR;
                     end
                 end
+
+                ST_RADDR: begin
+                    if (m_axi_arready) begin
+                        read_beat  <= 2'h0;
+                        read_block <= 128'h0;
+                        state <= ST_RDATA;
+                    end
+                end
+
+                ST_RDATA: begin
+                    if (m_axi_rvalid) begin
+                        case (read_beat)
+                            2'd0: read_block[31:0]   <= m_axi_rdata;
+                            2'd1: read_block[63:32]  <= m_axi_rdata;
+                            2'd2: read_block[95:64]  <= m_axi_rdata;
+                            default: read_block[127:96] <= m_axi_rdata;
+                        endcase
+
+                        if (m_axi_rlast || read_beat == 2'd3) begin
+                            if (read_is_dc) begin
+                                dc_dev_rdata <= {m_axi_rdata, read_block[95:0]};
+                                dc_dev_rvalid <= 1'b1;
+                            end else begin
+                                ic_dev_rdata <= {m_axi_rdata, read_block[95:0]};
+                                ic_dev_rvalid <= 1'b1;
+                            end
+                            state <= ST_IDLE;
+                        end else begin
+                            read_beat <= read_beat + 1'b1;
+                        end
+                    end
+                end
+
+                ST_WRITE: begin
+                    if (m_axi_awvalid && m_axi_awready)
+                        aw_done <= 1'b1;
+                    if (m_axi_wvalid && m_axi_wready)
+                        w_done <= 1'b1;
+                    if ((aw_done || (m_axi_awvalid && m_axi_awready)) &&
+                        (w_done || (m_axi_wvalid && m_axi_wready)))
+                        state <= ST_WRESP;
+                end
+
+                ST_WRESP: begin
+                    if (m_axi_bvalid)
+                        state <= ST_IDLE;
+                end
+
+                default: state <= ST_IDLE;
             endcase
         end
     end

@@ -4,9 +4,7 @@
 
 // Direct-mapped Instruction Cache
 //   Capacity: 64 lines x 128 bits = 1KB
-//   Line format: {valid(1bit), tag(5bit), data(128bit)} = 134 bits
-//   Index: inst_addr[9:4] (6 bits, 64 entries)
-//   Tag:   inst_addr[14:10] (5 bits)
+//   Ported from reference miniRV design
 
 module ICache(
     input  wire         cpu_clk,
@@ -18,11 +16,33 @@ module ICache(
     output reg  [31:0]  inst_out,       // instruction output
     // Interface to Read Bus (from axi_bus)
     input  wire         dev_rrdy,       // bus ready to accept read request
-    output reg  [ 3:0]  cpu_ren,        // read enable to bus
-    output reg  [31:0]  cpu_raddr,      // read address to bus
+    output wire [ 3:0]  cpu_ren,        // read enable to bus (combinational)
+    output wire [31:0]  cpu_raddr,      // read address to bus (combinational)
     input  wire         dev_rvalid,     // bus data valid
     input  wire [`IC_BLK_SIZE-1:0] dev_rdata  // data from bus (128 bits)
 );
+
+    localparam INDEX_W = 6;  // 64 lines
+    localparam TAG_W   = 5;
+
+    localparam ST_IDLE  = 2'd0;
+    localparam ST_REQ   = 2'd1;
+    localparam ST_WAIT  = 2'd2;
+
+    reg [1:0] state;
+    reg [31:0] miss_addr;
+
+    reg [TAG_W-1:0] tags [0:63];
+    reg [127:0] lines [0:63];
+    reg valid [0:63];
+    integer i;
+
+    wire [INDEX_W-1:0] cpu_index = inst_addr[INDEX_W+3:4];
+    wire [TAG_W-1:0]   cpu_tag   = inst_addr[31:INDEX_W+4];
+    wire cpu_hit = valid[cpu_index] && tags[cpu_index] == cpu_tag;
+
+    wire [INDEX_W-1:0] miss_index = miss_addr[INDEX_W+3:4];
+    wire [TAG_W-1:0]   miss_tag   = miss_addr[31:INDEX_W+4];
 
     function [31:0] pick_word;
         input [127:0] line_data;
@@ -37,140 +57,50 @@ module ICache(
         end
     endfunction
 
-`ifdef ENABLE_ICACHE
-
-    localparam IDLE   = 2'b00;
-    localparam LOOKUP = 2'b01;
-    localparam REFILL = 2'b10;
-
-    reg  [ 1:0] state, nstat;
-    reg  [31:0] req_addr_r;
-
-    // Cache storage: 64 lines x 134 bits
-    reg [133:0] cache_mem [0:63];
-
-    wire [5:0] cache_index_r = req_addr_r[9:4];
-    wire [5:0] cache_index_w = (state == IDLE) ? inst_addr[9:4] : cache_index_r;
-    wire [133:0] cache_line_r = cache_mem[cache_index_r];
-    wire [133:0] cache_line_w = {1'b1, req_addr_r[14:10], dev_rdata};
-
-    wire [4:0] tag_from_cpu   = req_addr_r[14:10];
-    wire [1:0] offset         = req_addr_r[3:2];
-    wire       valid_bit      = cache_line_r[133];
-    wire [4:0] tag_from_cache = cache_line_r[132:128];
-
-    wire hit = (state == LOOKUP) && valid_bit && (tag_from_cpu == tag_from_cache);
-
-    // Delay dev_rvalid by 1 cycle — data is stable one cycle after rvalid asserts
-    reg dev_rvalid_d1;
-    always @(posedge cpu_clk) begin
-        if (cpu_rst) dev_rvalid_d1 <= 1'b0;
-        else         dev_rvalid_d1 <= dev_rvalid;
-    end
-
-    always @(posedge cpu_clk) begin
-        if (state == REFILL && dev_rvalid_d1)
-            cache_mem[cache_index_w] <= {1'b1, req_addr_r[14:10], dev_rdata};
-    end
+    assign cpu_ren   = (state == ST_REQ) ? 4'hF : 4'h0;
+    assign cpu_raddr = {miss_addr[31:4], 4'b0000};
 
     always @(posedge cpu_clk or posedge cpu_rst) begin
         if (cpu_rst) begin
+            state     <= ST_IDLE;
             inst_valid <= 1'b0;
             inst_out   <= 32'h0;
+            miss_addr  <= 32'h0;
+            for (i = 0; i < 64; i = i + 1)
+                valid[i] <= 1'b0;
         end else begin
-            inst_valid <= hit | ((state == REFILL) && dev_rvalid_d1);
-            if ((state == REFILL) && dev_rvalid_d1)
-                inst_out <= pick_word(dev_rdata, offset);
-            else if (hit)
-                inst_out <= pick_word(cache_line_r[127:0], offset);
-        end
-    end
-
-    always @(posedge cpu_clk or posedge cpu_rst) begin
-        if (cpu_rst) begin
-            state      <= IDLE;
-            req_addr_r <= 32'h0;
-        end else begin
-            state <= nstat;
-            if (state == IDLE && inst_rreq)
-                req_addr_r <= inst_addr;
-        end
-    end
-
-    always @(*) begin
-        case (state)
-            IDLE:   nstat = inst_rreq ? LOOKUP : IDLE;
-            LOOKUP: nstat = hit ? IDLE : (dev_rrdy ? REFILL : LOOKUP);
-            REFILL: nstat = dev_rvalid_d1 ? IDLE : REFILL;
-            default:nstat = IDLE;
-        endcase
-    end
-
-    reg [31:0] refill_addr;
-    always @(posedge cpu_clk or posedge cpu_rst) begin
-        if (cpu_rst) begin
-            cpu_ren   <= 4'h0;
-            cpu_raddr <= 32'h0;
-        end else begin
-            cpu_ren <= 4'h0;
-            // Latch refill address once on LOOKUP miss
-            if (state == LOOKUP && !hit && dev_rrdy)
-                refill_addr <= {req_addr_r[31:4], 4'b0000};
-            // Hold cpu_ren during entire REFILL so axi_bus doesn't miss the pulse
-            if (state == REFILL && !dev_rvalid) begin
-                cpu_ren   <= 4'hF;
-                cpu_raddr <= refill_addr;
-            end
-        end
-    end
-
-`else
-    // Passthrough when ICache disabled
-    localparam IDLE  = 2'b00;
-    localparam STAT0 = 2'b01;
-    localparam STAT1 = 2'b11;
-    reg [1:0] state, nstat;
-
-    always @(posedge cpu_clk or posedge cpu_rst) begin
-        state <= cpu_rst ? IDLE : nstat;
-    end
-
-    always @(*) begin
-        case (state)
-            IDLE:    nstat = inst_rreq ? (dev_rrdy ? STAT1 : STAT0) : IDLE;
-            STAT0:   nstat = dev_rrdy ? STAT1 : STAT0;
-            STAT1:   nstat = dev_rvalid ? IDLE : STAT1;
-            default: nstat = IDLE;
-        endcase
-    end
-
-    always @(posedge cpu_clk or posedge cpu_rst) begin
-        if (cpu_rst) begin
             inst_valid <= 1'b0;
-            cpu_ren    <= 4'h0;
-            cpu_raddr  <= 32'h0;
-        end else begin
             case (state)
-                IDLE: begin
-                    inst_valid <= 1'b0;
-                    cpu_ren    <= (inst_rreq && dev_rrdy) ? 4'hF : 4'h0;
-                    cpu_raddr  <= inst_rreq ? inst_addr : 32'h0;
+                ST_IDLE: begin
+                    if (inst_rreq) begin
+                        if (cpu_hit) begin
+                            inst_out <= pick_word(lines[cpu_index], inst_addr[3:2]);
+                            inst_valid <= 1'b1;
+                        end else begin
+                            miss_addr <= inst_addr;
+                            state <= ST_REQ;
+                        end
+                    end
                 end
-                STAT0: begin
-                    cpu_ren    <= dev_rrdy ? 4'hF : 4'h0;
+
+                ST_REQ:
+                    if (dev_rrdy)
+                        state <= ST_WAIT;
+
+                ST_WAIT: begin
+                    if (dev_rvalid) begin
+                        lines[miss_index] <= dev_rdata;
+                        tags[miss_index]  <= miss_tag;
+                        valid[miss_index] <= 1'b1;
+                        inst_out   <= pick_word(dev_rdata, miss_addr[3:2]);
+                        inst_valid <= 1'b1;
+                        state <= ST_IDLE;
+                    end
                 end
-                STAT1: begin
-                    cpu_ren    <= 4'h0;
-                    inst_valid <= dev_rvalid;
-                    inst_out   <= dev_rvalid ? dev_rdata[31:0] : 32'h0;
-                end
-                default: begin
-                    inst_valid <= 1'b0;
-                    cpu_ren    <= 4'h0;
-                end
+
+                default: state <= ST_IDLE;
             endcase
         end
     end
-`endif
 
 endmodule

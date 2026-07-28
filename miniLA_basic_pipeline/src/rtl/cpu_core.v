@@ -191,14 +191,15 @@ module cpu_core(
     wire        is_mul_div_ex = idex_is_mul | idex_is_div;
 
     ALU U_ALU (
-        .rst  (cpu_rst),
-        .clk  (cpu_clk),
-        .op   (idex_alu_op),
-        .a    (alu_a),
-        .b    (alu_b),
-        .c    (alu_c),
-        .br   (alu_br),
-        .busy (mul_div_busy)
+        .rst        (cpu_rst),
+        .clk        (cpu_clk),
+        .op         (idex_alu_op),
+        .a          (alu_a),
+        .b          (alu_b),
+        .md_start (mul_div_start),
+        .c          (alu_c),
+        .br         (alu_br),
+        .busy       (mul_div_busy)
     );
 
     wire [31:0] ex_pc4 = idex_pc4;
@@ -247,12 +248,23 @@ module cpu_core(
     wire mem_is_load  = exmem_ram_rop != `RAM_EXT_N;
     wire mem_is_store = exmem_ram_wop != `RAM_WE_N;
     wire mem_is_access = exmem_valid && (mem_is_load || mem_is_store);
-    wire mem_done = mem_is_load ? daccess_rvalid :
+    // For loads: only accept daccess_rvalid after request was actually sent
+    // (mem_req_sent=1). Prevents spurious completion from stale cache HITs.
+    wire mem_done = mem_is_load ? (daccess_rvalid && mem_req_sent) :
                     mem_is_store ? daccess_wresp : 1'b1;
     wire mem_wait = mem_is_access && !mem_done;
 
-    assign daccess_ren   = mem_is_load  && !mem_req_sent ? mem_da_ren   : 4'h0;
-    assign daccess_wen   = mem_is_store && !mem_req_sent ? mem_da_wen   : 4'h0;
+    // exmem_just_changed: suppress daccess_ren for 1 cycle after EX/MEM
+    // advances, giving exmem_alu time to settle with the new instruction.
+    reg [31:0] prev_exmem_pc;
+    always @(posedge cpu_clk) begin
+        if (cpu_rst) prev_exmem_pc <= 32'h0;
+        else         prev_exmem_pc <= exmem_pc;
+    end
+    wire exmem_just_changed = (exmem_pc != prev_exmem_pc);
+
+    assign daccess_ren   = mem_is_load  && !mem_req_sent && !exmem_just_changed ? mem_da_ren   : 4'h0;
+    assign daccess_wen   = mem_is_store && !mem_req_sent && !exmem_just_changed ? mem_da_wen   : 4'h0;
     assign daccess_addr  = mem_da_addr;
     assign daccess_wdata = mem_da_wdata;
 
@@ -269,8 +281,10 @@ module cpu_core(
     // 流水线控制
     // =========================================================================
 
-    wire mul_div_wait = idex_valid && is_mul_div_ex &&
-                        (!idex_md_started || mul_div_busy);
+    // mul_div_start: 1-cycle pulse when instruction enters execution
+    wire mul_div_start = idex_valid && is_mul_div_ex && !idex_md_started;
+    wire mul_div_wait  = idex_valid && is_mul_div_ex &&
+                         (!idex_md_started || mul_div_busy);
 
 
     // Load-use 停顿: ID 需要的寄存器正被 EX/MEM 阶段的 load 写
@@ -402,9 +416,8 @@ module cpu_core(
                 idex_rs1_data <= wb_data;
             if (wb_rf_we && wb_rd == idex_rs2)
                 idex_rs2_data <= wb_data;
-            if (idex_md_started)
-                idex_alu_op <= `ALU_ADD;
-            idex_md_started <= 1'b1;
+            if (mul_div_start)
+                idex_md_started <= 1'b1;
         end else if (ex_redirect || load_use_stall || redirect_pending) begin
             idex_valid      <= 1'b0;
             idex_inst       <= NOP;
@@ -459,8 +472,10 @@ module cpu_core(
             if ((|daccess_ren) || (|daccess_wen))
                 mem_req_sent <= 1'b1;
         end else if (mul_div_wait) begin
-            exmem_valid  <= 1'b0;
-            mem_req_sent <= 1'b0;
+            exmem_valid        <= 1'b0;
+            exmem_ram_rop      <= `RAM_EXT_N;
+            exmem_ram_wop      <= `RAM_WE_N;
+            mem_req_sent       <= 1'b0;
         end else begin
             exmem_valid        <= idex_valid;
             exmem_pc           <= idex_pc;
