@@ -1,0 +1,52 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2023.2 (win64) Build 4029153 Fri Oct 13 20:14:34 MDT 2023
+| Date         : Wed Jul 29 10:44:56 2026
+| Host         : 217-29 running 64-bit major release  (build 9200)
+| Command      : report_utilization -hierarchical -file D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/reports/c_test_board_50MHz/utilization_PASS.rpt
+| Design       : miniRV_SoC
+| Device       : xc7a35tcsg324-1
+| Speed File   : -1
+| Design State : Physopt postRoute
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Utilization Design Information
+
+Table of Contents
+-----------------
+1. Utilization by Hierarchy
+
+1. Utilization by Hierarchy
+---------------------------
+
++------------------+----------------------------+------------+------------+---------+------+------+--------+--------+------------+
+|     Instance     |           Module           | Total LUTs | Logic LUTs | LUTRAMs | SRLs |  FFs | RAMB36 | RAMB18 | DSP Blocks |
++------------------+----------------------------+------------+------------+---------+------+------+--------+--------+------------+
+| miniRV_SoC       |                      (top) |       3765 |       3321 |     444 |    0 | 3036 |     40 |      0 |          0 |
+|   (miniRV_SoC)   |                      (top) |        401 |          1 |     400 |    0 |    2 |      0 |      0 |          0 |
+|   U_CLKGEN       |                  clk_wiz_0 |          0 |          0 |       0 |    0 |    0 |      0 |      0 |          0 |
+|     inst         |          clk_wiz_0_clk_wiz |          0 |          0 |       0 |    0 |    0 |      0 |      0 |          0 |
+|   U_MAIN_MEMORY  |             axi_bram_slave |        146 |        146 |       0 |    0 |  136 |     40 |      0 |          0 |
+|   U_cpu          |                    cpu_top |       3219 |       3175 |      44 |    0 | 2898 |      0 |      0 |          0 |
+|     U_AXI_MASTER |                 axi_master |         67 |         67 |       0 |    0 |  430 |      0 |      0 |          0 |
+|     U_DCACHE     |                     dcache |        284 |        284 |       0 |    0 |  175 |      0 |      0 |          0 |
+|     U_ICACHE     |                     icache |        201 |        201 |       0 |    0 |  593 |      0 |      0 |          0 |
+|     U_IO         |             io_peripherals |         99 |         99 |       0 |    0 |  215 |      0 |      0 |          0 |
+|       (U_IO)     |             io_peripherals |         16 |         16 |       0 |    0 |  158 |      0 |      0 |          0 |
+|       U_UART     |                uart_simple |         83 |         83 |       0 |    0 |   57 |      0 |      0 |          0 |
+|     U_SEVEN_SEG  |                  seven_seg |          5 |          5 |       0 |    0 |   16 |      0 |      0 |          0 |
+|     U_core       |                   cpu_core |       2566 |       2522 |      44 |    0 | 1469 |      0 |      0 |          0 |
+|       (U_core)   |                   cpu_core |        804 |        804 |       0 |    0 |  581 |      0 |      0 |          0 |
+|       U_ALU      |                        ALU |       1696 |       1696 |       0 |    0 |  888 |      0 |      0 |          0 |
+|         (U_ALU)  |                        ALU |         11 |         11 |       0 |    0 |   64 |      0 |      0 |          0 |
+|         U_div    |                    divider |        322 |        322 |       0 |    0 |  197 |      0 |      0 |          0 |
+|         U_divu   |                  divider_0 |        270 |        270 |       0 |    0 |  197 |      0 |      0 |          0 |
+|         U_mul    |                 multiplier |        677 |        677 |       0 |    0 |  231 |      0 |      0 |          0 |
+|         U_mulu   | multiplier__parameterized0 |        418 |        418 |       0 |    0 |  199 |      0 |      0 |          0 |
+|       U_MEM_EXT  |                       MEXT |         26 |         26 |       0 |    0 |    0 |      0 |      0 |          0 |
+|       U_RF       |                         RF |         49 |          5 |      44 |    0 |    0 |      0 |      0 |          0 |
+|       U_SEXT     |                       SEXT |          1 |          1 |       0 |    0 |    0 |      0 |      0 |          0 |
++------------------+----------------------------+------------+------------+---------+------+------+--------+--------+------------+
+* Note: The sum of lower-level cells may be larger than their parent cells total, due to cross-hierarchy LUT combining
+
+

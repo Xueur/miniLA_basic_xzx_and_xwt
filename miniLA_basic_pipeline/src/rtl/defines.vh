@@ -2,6 +2,7 @@
 `define RUN_TRACE
 `endif
 
+`define BRAM_USE_IP        // Vivado IP bram_axi (comment out for Verilator RTL sim)
 `define ENABLE_ICACHE
 `define ENABLE_DCACHE
 

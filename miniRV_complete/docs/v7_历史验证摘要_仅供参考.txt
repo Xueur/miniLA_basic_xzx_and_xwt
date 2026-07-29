@@ -1,0 +1,33 @@
+历史记录：v7 只验证到CoreMark启动，不可作为最终CRC通过证明
+miniRV C_TEST/CoreMark 50 MHz v7 自动验证摘要
+日期：2026-07-29
+目标器件：XC7A35TCSG324-1
+
+内存映像
+- 总容量：40960 × 32 bit = 160 KiB
+- 结构：5 × 8192 × 32 bit
+- CoreMark完整映像SHA-256：
+  7788fd41481b53f26a51992a7379798f0e40c5f3450f26a2a5ddb2a46091fbeb
+- 5个Bank拼接结果与coremark.hex逐字节相同
+- active_test默认恢复为4_coremark
+
+Xilinx 7系列资源映射
+- RAMB36E1：40
+- RAMB18E1：0
+- 映射后结构检查：0 problems
+- XC7A35T可用RAMB36E1：50
+
+功能回归
+- PIPELINE CPU: ALL 44 miniRV INSTRUCTIONS PASSED
+- HAZARD TEST PASSED: load-use + forwarding + flush
+- C_TEST: SWITCH + LED + DIG + UART TX/RX + TIMER PASSED
+- TRACE BOARD TEST PASSED: display = 0x25000025
+- BANKED BRAM AXI TEST PASSED: 10 checks across all 5 banks
+- CoreMark 1.0
+- COREMARK BOOT/UART TEST PASSED in 5054719 cycles
+
+仍需用户本机完成
+- Vivado 2023.2 Implementation和Generate Bitstream
+- 确认Setup WNS与Hold WHS均非负
+- EGO1下板并保存完整CoreMark串口输出
+- 确认Correct operation validated.和FINISH

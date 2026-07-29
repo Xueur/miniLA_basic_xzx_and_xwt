@@ -1,0 +1,30 @@
+miniRV CoreMark 50 MHz v8 验证记录
+日期：2026-07-29
+目标器件：EGO1 / XC7A35TCSG324-1
+
+v8修复：
+- 保留v7的5 × 8192 × 32 bit片上BRAM结构。
+- daccess_rvalid/daccess_wresp只有在mem_req_sent为1时才能完成访存。
+- 残留响应有效期间禁止发出下一笔读写请求。
+- src/rtl与AXI_Trace_mySoC中的cpu_core.v保持一致。
+
+问题复现：
+- v7在CoreMark初始化阶段丢失SW 0x000001ed -> 0x0000d3f8。
+- 实板结果为ec70 / b9d6 / b215，不能算CoreMark通过。
+
+v8本地RTL回归：
+- PIPELINE CPU: ALL 44 miniRV INSTRUCTIONS PASSED
+- HAZARD TEST PASSED: load-use + forwarding + flush
+- MEM RESPONSE HAZARD TEST PASSED: no stale response reuse
+- BANKED BRAM AXI TEST PASSED: 10 checks across all 5 banks
+- C_TEST: SWITCH + LED + DIG + UART TX/RX + TIMER PASSED
+- TRACE BOARD TEST PASSED: display = 0x25000025
+- crclist   = 0xe714
+- crcmatrix = 0x1fd7
+- crcstate  = 0x8e3a
+- FINISH
+
+说明：
+- CRC仿真把迭代数缩到1，只验证计算正确性，所以会提示运行时间不足10秒。
+- 实板保持自动标定，最终必须看到Correct operation validated.和FINISH。
+- Vivado 2023.2最终Implementation、WNS/WHS、功耗及实板跑分由用户本机取得。

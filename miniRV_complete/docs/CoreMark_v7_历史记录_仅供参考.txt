@@ -1,0 +1,49 @@
+历史记录：v7只验证到CoreMark启动，最终CRC错误；请使用v8验证记录
+miniRV CoreMark 50 MHz v7 验证记录
+日期：2026-07-29
+
+基线：
+- miniRV_lab2_Trace_board_50MHz_timing_fixed_v4
+- EGO1 XC7A35TCSG324-1
+- 五级流水线 SoC
+- 用户实板已确认 AXI Trace 数码管显示 25000025
+- 用户 Vivado Post-Implementation Setup WNS 为正、TNS=0
+
+CoreMark 改动：
+- 默认初始化映像为coremark_bank0.hex～coremark_bank4.hex
+- COE 严格转换为 40960 个 32 位字（160 KiB）
+- 主存显式拆分为5 × 8192 × 32 bit
+- UART 状态位采用课程定义：
+  bit3=TX busy，bit2=TX idle，bit1=RX full，bit0=RX valid
+- CPU、CoreMark MHZ、UART CLK_FREQ 均保持 50 MHz
+- 自制 C_TEST 的 TX ready 轮询同步改用 bit2
+
+本地 RTL 验证结果：
+1. 44 条指令：
+   PIPELINE CPU: ALL 44 miniRV INSTRUCTIONS PASSED
+2. 流水线冒险：
+   HAZARD TEST PASSED: load-use + forwarding + flush
+3. Trace 下板镜像回归：
+   TRACE BOARD TEST PASSED: display = 0x25000025
+4. 五类外设：
+   C_TEST: SWITCH + LED + DIG + UART TX/RX + TIMER PASSED
+5. CoreMark 启动与 UART：
+   CoreMark 1.0
+   COREMARK BOOT/UART TEST PASSED in 5054719 cycles
+6. 综合结构：
+   Yosys hierarchy/check：0 problems
+   Xilinx 7系列映射：40 × RAMB36E1
+7. Bank边界与写字节使能：
+   BANKED BRAM AXI TEST PASSED: 10 checks across all 5 banks
+
+v7修复说明：
+- v6的40960深度数组被Vivado 2023.2向上扩成65536深度，使用64个
+  RAMB36E1并在place_design前触发UTLZ-1。
+- v7使用5个独立8192深度数组，实际映射为40个RAMB36E1。
+- 访问0x25800的CoreMark栈仍位于Bank4内，没有缩小可用主存。
+
+仍需在用户本机完成：
+- Vivado 2023.2 Synthesis / Implementation / Generate Bitstream
+- 确认 WNS/WHS 均非负，TNS/THS=0
+- EGO1 下板并保存完整 UART CoreMark 输出
+- 确认 Correct operation validated 和 FINISH

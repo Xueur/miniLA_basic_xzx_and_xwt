@@ -190,6 +190,9 @@ module cpu_core(
     wire        mul_div_busy;
     wire        is_mul_div_ex = idex_is_mul | idex_is_div;
 
+    // mul_div_start: 1-cycle pulse when instruction enters execution
+    wire mul_div_start = idex_valid && is_mul_div_ex && !idex_md_started;
+
     ALU U_ALU (
         .rst        (cpu_rst),
         .clk        (cpu_clk),
@@ -268,21 +271,10 @@ module cpu_core(
     assign daccess_addr  = mem_da_addr;
     assign daccess_wdata = mem_da_wdata;
 
-    // DEBUG: mem access
-    always @(posedge cpu_clk) begin
-        if (mem_is_access)
-            $display("[MEM] pc=%08x %s we=%b addr=%08x wdata=%08x wait=%d done=%d resp=%d rvld=%d",
-                exmem_pc, mem_is_store ? "ST" : "LD",
-                daccess_wen, daccess_addr, daccess_wdata,
-                mem_wait, mem_done, daccess_wresp, daccess_rvalid);
-    end
-
     // =========================================================================
     // 流水线控制
     // =========================================================================
 
-    // mul_div_start: 1-cycle pulse when instruction enters execution
-    wire mul_div_start = idex_valid && is_mul_div_ex && !idex_md_started;
     wire mul_div_wait  = idex_valid && is_mul_div_ex &&
                          (!idex_md_started || mul_div_busy);
 

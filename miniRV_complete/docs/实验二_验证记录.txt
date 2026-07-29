@@ -1,0 +1,60 @@
+实验二自动验证记录
+====================
+
+A 组：五级流水线 CPU
+--------------------
+测试内容：44 条 miniRV 指令、寄存器写回序列、Load/Store 最终值、
+          分支冲刷、Load-use 暂停、EX/MEM 与 MEM/WB 前递、乘除法暂停。
+结果：
+PIPELINE CPU CXXRTL: ALL 44 miniRV INSTRUCTIONS PASSED in 351 cycles
+
+专项冒险测试
+------------
+测试内容：lw→add Load-use、EX/MEM/MEM/WB 前递、Store 数据前递、
+          taken BEQ 错误路径冲刷。
+结果：
+HAZARD TEST PASSED: load-use + forwarding + flush in 20 cycles
+
+B 组：Cache + AXI
+-----------------
+测试内容：五级流水线、ICache、DCache、AXI 四拍读突发、AXI 写响应。
+结果：
+PIPELINE SOC: 44 INSTRUCTIONS + CACHE + AXI PASSED
+in 500 cycles, 23 read bursts, 3 writes
+
+课程官方 AXI Trace
+------------------
+测试框架：cdp-tests miniRV 分支、官方 bram_axi、官方 Golden Model。
+固定层次：miniRV_SoC -> cpu_top U_cpu -> cpu_core U_core。
+结果：
+Passed Tests (45)
+Failed Tests (0)
+
+B 组：五类 I/O
+---------------
+测试内容：
+1. 拨码 0xA55A 读入；
+2. LED 输出 0xA55A；
+3. 计时器读出并写数码管；
+4. UART TX 发送 OK\\r\\n；
+5. UART RX 注入字符 A 并回显。
+结果：
+C_TEST: SWITCH + LED + DIG + UART TX/RX + TIMER PASSED
+in 17455 cycles
+
+综合检查
+--------
+RTL 层次综合：0 problems
+组合环：无
+锁存器：无
+多驱动：无
+
+待用户在 Vivado/EGO1 上完成
+---------------------------
+1. 课程官方 Basic Trace；
+2. 在本人 WSL2 环境保存课程官方 AXI Trace 通过截图；
+3. CoreMark 编译、串口成绩和下板录像/截图；
+4. Post-Route WNS、TNS、Hold、DRC、资源与功耗报告；
+5. 比特流实际下载验证。
+
+注意：以上待办不能用未运行的推测值替代。

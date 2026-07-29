@@ -1,0 +1,32 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Wed Jul 29 10:45:14 2026
+# Process ID: 9520
+# Current directory: D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent11824 D:\miniRV_CTEST_CoreMark_v8\miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed\miniRV_complete\vivado_c_test_board_50MHz\miniRV_c_test_board_50MHz.xpr
+# Log file: D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado.log
+# Journal file: D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete\vivado.jou
+# Running On: 217-29, OS: Windows, CPU Frequency: 3192 MHz, CPU Physical cores: 6, Host memory: 17056 MB
+#-----------------------------------------------------------
+start_gui
+open_project D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.xpr
+update_compile_order -fileset sources_1
+open_hw_manager
+connect_hw_server -allow_non_jtag
+open_hw_target
+set_property PROGRAM.FILE {D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/impl_1/miniRV_SoC.bit} [get_hw_devices xc7a35t_0]
+current_hw_device [get_hw_devices xc7a35t_0]
+refresh_hw_device -update_hw_probes false [lindex [get_hw_devices xc7a35t_0] 0]
+set_property PROBES.FILE {} [get_hw_devices xc7a35t_0]
+set_property FULL_PROBES.FILE {} [get_hw_devices xc7a35t_0]
+set_property PROGRAM.FILE {D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/impl_1/miniRV_SoC.bit} [get_hw_devices xc7a35t_0]
+program_hw_devices [get_hw_devices xc7a35t_0]
+refresh_hw_device [lindex [get_hw_devices xc7a35t_0] 0]
+set_property PROBES.FILE {} [get_hw_devices xc7a35t_0]
+set_property FULL_PROBES.FILE {} [get_hw_devices xc7a35t_0]
+set_property PROGRAM.FILE {D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/impl_1/miniRV_SoC.bit} [get_hw_devices xc7a35t_0]
+program_hw_devices [get_hw_devices xc7a35t_0]
+refresh_hw_device [lindex [get_hw_devices xc7a35t_0] 0]

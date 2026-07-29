@@ -1,0 +1,32 @@
+最终验证结果（2026-07-27）
+========================
+
+1. 官方固定层次
+   miniRV_SoC -> cpu_top U_cpu -> cpu_core U_core
+   miniRV_SoC -> bram_axi U_bram（仅 RUN_TRACE）
+
+2. Verilator 5.020 + 课程官方 cdp-tests miniRV 分支
+   VminiRV_SoC_cpu_top.h：已生成
+   VminiRV_SoC_cpu_core.h：已生成
+   VminiRV_SoC_IROM.h：未生成
+
+3. 课程官方 AXI Trace 差分回归
+   Passed Tests (45)
+   Failed Tests (0)
+
+4. 流水线 CPU 自检
+   PIPELINE CPU: ALL 44 miniRV INSTRUCTIONS PASSED
+
+5. 专项冒险测试
+   HAZARD TEST PASSED: load-use + forwarding + flush
+
+6. Cache + AXI + 外设 C_TEST
+   C_TEST: SWITCH + LED + DIG + UART TX/RX + TIMER PASSED
+
+7. 两条互斥主存路径
+   RUN_TRACE：课程官方 bram_axi
+   SOC_SIM/综合下板：工程 axi_bram_slave
+
+说明：
+官方 AXI Trace 已实际运行，不是根据自建 Testbench 推测。
+Vivado 综合、实现、时序和实际下板仍需在用户本机 Vivado/EGO1 环境完成。

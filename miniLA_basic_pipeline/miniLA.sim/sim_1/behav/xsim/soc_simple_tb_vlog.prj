@@ -1,0 +1,24 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  --include "../../../../src/rtl" \
+"../../../../src/rtl/ip/bram_axi/sim/bram_axi.v" \
+"../../../../src/rtl/ALU.v" \
+"../../../../src/rtl/Controller.v" \
+"../../../../src/rtl/DCache.v" \
+"../../../../src/rtl/EXT.v" \
+"../../../../src/rtl/ICache.v" \
+"../../../../src/rtl/MEXT.v" \
+"../../../../src/rtl/MREQ.v" \
+"../../../../src/rtl/RF.v" \
+"../../../../src/rtl/axi_bus.v" \
+"../../../../src/rtl/cpu_core.v" \
+"../../../../src/rtl/cpu_top.v" \
+"../../../../src/rtl/divider.v" \
+"../../../../src/rtl/miniLA_SoC.v" \
+"../../../../src/rtl/multiplier.v" \
+"../../../../src/sim/soc_simple_tb.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

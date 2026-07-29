@@ -1,0 +1,138 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2023.2 (win64) Build 4029153 Fri Oct 13 20:14:34 MDT 2023
+| Date         : Wed Jul 29 10:43:44 2026
+| Host         : 217-29 running 64-bit major release  (build 9200)
+| Command      : report_control_sets -verbose -file miniRV_SoC_control_sets_placed.rpt
+| Design       : miniRV_SoC
+| Device       : xc7a35t
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Control Set Information
+
+Table of Contents
+-----------------
+1. Summary
+2. Histogram
+3. Flip-Flop Distribution
+4. Detailed Control Set Information
+
+1. Summary
+----------
+
++----------------------------------------------------------+-------+
+|                          Status                          | Count |
++----------------------------------------------------------+-------+
+| Total control sets                                       |    60 |
+|    Minimum number of control sets                        |    60 |
+|    Addition due to synthesis replication                 |     0 |
+|    Addition due to physical synthesis replication        |     0 |
+| Unused register locations in slices containing registers |   116 |
++----------------------------------------------------------+-------+
+* Control sets can be merged at opt_design using control_set_merge or merge_equivalent_drivers
+** Run report_qor_suggestions for automated merging and remapping suggestions
+
+
+2. Histogram
+------------
+
++--------------------+-------+
+|       Fanout       | Count |
++--------------------+-------+
+| Total control sets |    60 |
+| >= 0 to < 4        |     2 |
+| >= 4 to < 6        |     3 |
+| >= 6 to < 8        |     0 |
+| >= 8 to < 10       |    12 |
+| >= 10 to < 12      |     0 |
+| >= 12 to < 14      |     0 |
+| >= 14 to < 16      |     1 |
+| >= 16              |    42 |
++--------------------+-------+
+* Control sets can be remapped at either synth_design or opt_design
+
+
+3. Flip-Flop Distribution
+-------------------------
+
++--------------+-----------------------+------------------------+-----------------+--------------+
+| Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
++--------------+-----------------------+------------------------+-----------------+--------------+
+| No           | No                    | No                     |               0 |            0 |
+| No           | No                    | Yes                    |             275 |          113 |
+| No           | Yes                   | No                     |               0 |            0 |
+| Yes          | No                    | No                     |               0 |            0 |
+| Yes          | No                    | Yes                    |            2761 |          869 |
+| Yes          | Yes                   | No                     |               0 |            0 |
++--------------+-----------------------+------------------------+-----------------+--------------+
+
+
+4. Detailed Control Set Information
+-----------------------------------
+
++-------------------------+-----------------------------------------------------+------------------+------------------+----------------+--------------+
+|       Clock Signal      |                    Enable Signal                    | Set/Reset Signal | Slice Load Count | Bel Load Count | Bels / Slice |
++-------------------------+-----------------------------------------------------+------------------+------------------+----------------+--------------+
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_IO/U_UART/tx_i_1_n_0                        | rst_sync[1]      |                1 |              1 |         1.00 |
+|  U_CLKGEN/inst/clk_out1 |                                                     | rst_async        |                1 |              2 |         2.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_IO/U_UART/rx_bit[3]_i_1_n_0                 | rst_sync[1]      |                2 |              4 |         2.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_IO/U_UART/tx_bit[3]_i_1_n_0                 | rst_sync[1]      |                2 |              4 |         2.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_AXI_MASTER/FSM_onehot_state[4]_i_1_n_0      | rst_sync[1]      |                2 |              5 |         2.50 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/FSM_onehot_state_reg[1]_1[0]         | rst_sync[1]      |                2 |              8 |         4.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_IO/U_UART/rx_data[7]_i_1_n_0                | rst_sync[1]      |                4 |              8 |         2.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/FSM_onehot_state_reg[1]_0[0]         | rst_sync[1]      |                1 |              8 |         8.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/FSM_onehot_state_reg[1]_0[2]         | rst_sync[1]      |                1 |              8 |         8.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/FSM_onehot_state_reg[1]_0[3]         | rst_sync[1]      |                3 |              8 |         2.67 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/request_addr_reg[12]_0[0]            | rst_sync[1]      |                2 |              8 |         4.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/FSM_onehot_state_reg[1]_1[1]         | rst_sync[1]      |                2 |              8 |         4.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/FSM_onehot_state_reg[1]_0[1]         | rst_sync[1]      |                4 |              8 |         2.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/FSM_onehot_state[8]_i_1_n_0          | rst_sync[1]      |                2 |              9 |         4.50 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_IO/U_UART/tx_count[8]_i_1_n_0               | rst_sync[1]      |                3 |              9 |         3.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_IO/U_UART/tx_frame[8]_i_1_n_0               | rst_sync[1]      |                3 |              9 |         3.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_IO/U_UART/rx_count[8]_i_1_n_0               | rst_sync[1]      |                3 |              9 |         3.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/FSM_onehot_state_reg[7]_1[0]         | rst_sync[1]      |                5 |             15 |         3.00 |
+|  U_CLKGEN/inst/clk_out1 | U_MAIN_MEMORY/r_beat_0                              | rst_sync[1]      |               14 |             28 |         2.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_AXI_MASTER/aw_hold0                         | rst_sync[1]      |                8 |             29 |         3.62 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/E[0]                      | rst_sync[1]      |                8 |             30 |         3.75 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/memwb_valid_reg[0]        | rst_sync[1]      |               21 |             32 |         1.52 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/z[63]_i_1__0_n_0          | rst_sync[1]      |                8 |             32 |         4.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/FSM_onehot_state_reg[0]_0[0]           | rst_sync[1]      |                7 |             32 |         4.57 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/FSM_onehot_state_reg[6][0]             | rst_sync[1]      |               20 |             32 |         1.60 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/redirect_pending_reg_3[0] | rst_sync[1]      |               11 |             32 |         2.91 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_AXI_MASTER/read_block[31]_i_1_n_0           | rst_sync[1]      |               14 |             32 |         2.29 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/Q[1]                                 | rst_sync[1]      |                8 |             32 |         4.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/memwb_valid_reg_0[0]      | rst_sync[1]      |               15 |             32 |         2.13 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_div/dividend[31]_i_1_n_0       | rst_sync[1]      |               11 |             32 |         2.91 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_AXI_MASTER/read_block[63]_i_1_n_0           | rst_sync[1]      |               10 |             32 |         3.20 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_div/z1                         | rst_sync[1]      |               11 |             32 |         2.91 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_AXI_MASTER/read_block[95]_i_1_n_0           | rst_sync[1]      |               11 |             32 |         2.91 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_divu/dividend[31]_i_1__0_n_0   | rst_sync[1]      |               10 |             32 |         3.20 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_divu/z1                        | rst_sync[1]      |               12 |             32 |         2.67 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/idex_valid_reg            | rst_sync[1]      |               24 |             32 |         1.33 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/redirect_pending_reg[0]   | rst_sync[1]      |               10 |             33 |         3.30 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/request_wdata                        | rst_sync[1]      |               10 |             36 |         3.60 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/p_7_in                                 | rst_sync[1]      |               16 |             39 |         2.44 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/FSM_onehot_state_reg[0]_0[0]         | rst_sync[1]      |               18 |             52 |         2.89 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/idex_md_started_reg       | rst_sync[1]      |               23 |             64 |         2.78 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_div/z[31]_i_1_n_0              | rst_sync[1]      |               24 |             64 |         2.67 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_divu/z[31]_i_1__0_n_0          | rst_sync[1]      |               27 |             64 |         2.37 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/redirect_pending_reg_0[0] | rst_sync[1]      |               17 |             64 |         3.76 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mul/z[63]_i_1_n_0              | rst_sync[1]      |               23 |             64 |         2.78 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/fetch_outstanding_reg[0]  | rst_sync[1]      |               17 |             65 |         3.82 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_divu/count                     | rst_sync[1]      |               20 |             68 |         3.40 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_div/count                      | rst_sync[1]      |               21 |             68 |         3.24 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_AXI_MASTER/w_hold0                          | rst_sync[1]      |               39 |             72 |         1.85 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_RF/p_0_in                            |                  |               11 |             88 |         8.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/idex_npc_op[1]_i_3_0[0]   | rst_sync[1]      |               30 |            122 |         4.07 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/idex_md_started_reg_0     | rst_sync[1]      |               33 |            123 |         3.73 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_AXI_MASTER/dc_dev_rvalid_i_1_n_0            | rst_sync[1]      |               25 |            128 |         5.12 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_AXI_MASTER/ic_dev_rvalid_i_1_n_0            | rst_sync[1]      |               28 |            128 |         4.57 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mul/count                      | rst_sync[1]      |               52 |            165 |         3.17 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_core/U_ALU/U_mulu/count[5]_i_1_n_0          | rst_sync[1]      |               52 |            166 |         3.19 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_DCACHE/p_0_in264_out                        |                  |               50 |            200 |         4.00 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_ICACHE/p_0_in69_out                         |                  |               50 |            200 |         4.00 |
+|  U_CLKGEN/inst/clk_out1 |                                                     | rst_sync[1]      |              112 |            273 |         2.44 |
+|  U_CLKGEN/inst/clk_out1 | U_cpu/U_ICACHE/cpu_valid_i_1_n_0                    | rst_sync[1]      |              119 |            480 |         4.03 |
++-------------------------+-----------------------------------------------------+------------------+------------------+----------------+--------------+
+
+

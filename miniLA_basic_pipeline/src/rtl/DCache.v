@@ -4,7 +4,7 @@
 
 // Direct-mapped Data Cache (Write-through + Write-allocate)
 //   Capacity: 64 lines x 128 bits = 1KB
-//   Ported from reference miniRV design
+//   Direct-mapped, write-through + write-allocate
 
 module DCache(
     input  wire         cpu_clk,

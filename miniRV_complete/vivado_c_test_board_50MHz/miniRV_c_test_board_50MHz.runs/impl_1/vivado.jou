@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Wed Jul 29 10:43:03 2026
+# Process ID: 12800
+# Current directory: D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/impl_1
+# Command line: vivado.exe -log miniRV_SoC.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source miniRV_SoC.tcl -notrace
+# Log file: D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/impl_1/miniRV_SoC.vdi
+# Journal file: D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/impl_1\vivado.jou
+# Running On: 217-29, OS: Windows, CPU Frequency: 3192 MHz, CPU Physical cores: 6, Host memory: 17056 MB
+#-----------------------------------------------------------
+source miniRV_SoC.tcl -notrace

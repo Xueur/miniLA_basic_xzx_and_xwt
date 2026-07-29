@@ -1,0 +1,12 @@
+miniRV 44 条指令验证摘要
+
+1. Verilog 编译：通过（无警告）
+2. 自检 Testbench：通过
+3. 控制台结果：ALL 44 miniRV INSTRUCTIONS PASSED
+4. 指令覆盖：44/44
+5. PC Trace：73 项
+6. 寄存器写回 Trace：63 项
+7. 存储检查：SW、SB、SH 全部通过
+8. 乘除法算法：随机值与边界值检查通过
+
+说明：以上为工程内自建测试，不替代课程官方 Basic Trace。

@@ -1,0 +1,44 @@
+miniRV 五级流水线 SoC 50 MHz 时序修复版
+========================================
+
+固定频率参数
+------------
+Clocking Wizard: 50.000 MHz
+UART/外设 CLK_FREQ: 50000000 Hz
+CoreMark MHZ（加入 core_portme.c 时）: 50
+
+本地 RTL 功能回归
+-----------------
+TRACE BOARD TEST PASSED: display = 0x25000025
+PIPELINE CPU: ALL 44 miniRV INSTRUCTIONS PASSED
+HAZARD TEST PASSED: load-use + forwarding + flush
+C_TEST: SWITCH + LED + DIG + UART TX/RX + TIMER PASSED
+EGO1 SEVEN-SEGMENT GROUP ROUTING PASSED
+50 MHz RESET SYNCHRONIZER PASSED
+
+时序修复
+--------
+1. ICache/DCache 数据和标签阵列改为无复位同步写、异步读的 distributed RAM
+   推断模板，避免 16 Kbit 以上 Cache 数据阵列展开为普通触发器。
+2. 外部低有效 S6 与 PLL locked 组合为异步复位源，采用两级 ASYNC_REG 在
+   sys_clk 域同步释放。
+3. 构建脚本自动尝试多个 Performance 实现策略，只有 setup WNS 与 hold
+   WHS 均不为负时才生成 timing_summary_PASS.rpt 和最终比特流。
+
+仍需在 Vivado 2023.2 本机产生
+-----------------------------
+本环境没有 Vivado 布局布线程序，因此最终 WNS/TNS、资源和功耗数据必须在
+EGO1 目标器件 XC7A35TCSG324-1 上由 Vivado 2023.2 生成。
+
+双击 build_50MHz_bitstream_and_reports.bat。脚本成功结束即代表：
+WNS >= 0
+TNS = 0
+Failing Endpoints = 0
+
+通过报告：
+reports/trace_board_50MHz/timing_summary_PASS.rpt
+reports/trace_board_50MHz/utilization_PASS.rpt
+reports/trace_board_50MHz/power_PASS.rpt
+
+最终比特流：
+output/miniRV_trace_board_50MHz.bit

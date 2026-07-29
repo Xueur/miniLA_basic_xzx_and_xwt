@@ -1,0 +1,6 @@
+miniRV 44-instruction self-test
+program instructions: 81
+fetched PC trace entries: 73
+register write trace entries: 63
+covered required mnemonics: 44/44
+covered: add, addi, and, andi, auipc, beq, bge, bgeu, blt, bltu, bne, div, divu, jal, jalr, lb, lbu, lh, lhu, lui, lw, mul, mulh, mulhu, or, ori, rem, remu, sb, sh, sll, slli, slt, slti, sltiu, sltu, sra, srai, srl, srli, sub, sw, xor, xori

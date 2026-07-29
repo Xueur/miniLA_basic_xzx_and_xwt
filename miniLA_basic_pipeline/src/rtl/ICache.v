@@ -4,7 +4,7 @@
 
 // Direct-mapped Instruction Cache
 //   Capacity: 64 lines x 128 bits = 1KB
-//   Ported from reference miniRV design
+//   Direct-mapped, 64 lines x 128 bits = 1KB
 
 module ICache(
     input  wire         cpu_clk,

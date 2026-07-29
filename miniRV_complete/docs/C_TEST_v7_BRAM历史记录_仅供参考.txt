@@ -1,0 +1,51 @@
+历史记录：v7只完成BRAM资源修复，未修复访存响应误认；请使用v8
+C_TEST 0～4 v7 BRAM修复验证记录
+日期：2026-07-29
+学号：2024311373
+
+软件源码
+1. 测试0的5处TODO已完成。
+2. 测试1的5处TODO已完成。
+3. 测试2的5处TODO已完成。
+4. 测试0、1、2通过GCC严格语法和警告检查。
+5. 测试1、2的vscanf首次调用空指针问题已修复。
+6. 测试2的CLOCKS_PER_SEC拼写错误已修复为CLKS_PER_SEC。
+7. 测试4的MHZ保持50。
+8. 测试5 LLAMA2不在交付范围内。
+
+工程与镜像
+1. CPU、UART和计时器频率均为50 MHz。
+2. 活动程序映像为5个8192字Bank，共40960个32位字（160 KiB）。
+3. 默认活动程序为4_coremark。
+4. active_test.hex与已验证coremark.hex的SHA-256均为：
+   7788fd41481b53f26a51992a7379798f0e40c5f3450f26a2a5ddb2a46091fbeb
+5. 小程序COE补零到40960字、再恢复CoreMark映像的切换测试通过。
+6. 每次切换映像会自动生成active_test_bank0.hex～bank4.hex。
+7. 短程序补零、5个Bank重组、再恢复CoreMark映像的哈希检查通过。
+
+RTL回归
+1. PIPELINE CPU: ALL 44 miniRV INSTRUCTIONS PASSED
+2. HAZARD TEST PASSED: load-use + forwarding + flush
+3. C_TEST: SWITCH + LED + DIG + UART TX/RX + TIMER PASSED
+4. TRACE BOARD TEST PASSED: display = 0x25000025
+5. BANKED BRAM AXI TEST PASSED: 10 checks across all 5 banks
+6. CoreMark 1.0
+7. COREMARK BOOT/UART TEST PASSED in 5054719 cycles
+
+Xilinx资源映射
+1. 目标器件：XC7A35TCSG324-1。
+2. v6真实Vivado结果为64个RAMB36E1，超过器件50个上限。
+3. v7将主存显式拆为5 × 8192 × 32 bit。
+4. Xilinx 7系列映射结果：40个RAMB36E1，0个结构错误。
+5. 构建脚本会在Implementation前检查RAMB36/RAMB18真实用量。
+
+限制
+测试3会访问0x20000000的外部DDR。当前板级顶层是160 KiB片上BRAM版，
+没有连接外部DDR控制器，因此仅保留并检查老师原测试3源码，不能声称
+测试3已经在当前工程下板通过。
+
+Vivado最终实现
+本环境已完成Xilinx 7系列资源映射，但没有Vivado布局布线。请在
+Vivado 2023.2运行
+build_C_TEST_50MHz_bitstream_and_reports.bat，并以本机生成的
+WNS、WHS、TNS、THS和Failing Endpoints为最终时序依据。

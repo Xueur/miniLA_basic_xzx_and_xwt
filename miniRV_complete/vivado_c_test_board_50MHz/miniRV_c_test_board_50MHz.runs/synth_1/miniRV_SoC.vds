@@ -1,0 +1,1257 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Wed Jul 29 10:41:00 2026
+# Process ID: 2620
+# Current directory: D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/synth_1
+# Command line: vivado.exe -log miniRV_SoC.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source miniRV_SoC.tcl
+# Log file: D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/synth_1/miniRV_SoC.vds
+# Journal file: D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/synth_1\vivado.jou
+# Running On: 217-29, OS: Windows, CPU Frequency: 3192 MHz, CPU Physical cores: 6, Host memory: 17056 MB
+#-----------------------------------------------------------
+source miniRV_SoC.tcl -notrace
+create_project: Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 473.344 ; gain = 178.516
+Command: synth_design -top miniRV_SoC -part xc7a35tcsg324-1 -directive PerformanceOptimized -global_retiming on -fsm_extraction one_hot -keep_equivalent_registers -resource_sharing off -no_lc -shreg_min_size 5
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7a35t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a35t'
+INFO: [Device 21-403] Loading part xc7a35tcsg324-1
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 6224
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:05 ; elapsed = 00:00:05 . Memory (MB): peak = 1317.973 ; gain = 438.258
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'miniRV_SoC' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:5]
+	Parameter MEM_BANK0_FILE bound to: active_test_bank0.hex - type: string 
+	Parameter MEM_BANK1_FILE bound to: active_test_bank1.hex - type: string 
+	Parameter MEM_BANK2_FILE bound to: active_test_bank2.hex - type: string 
+	Parameter MEM_BANK3_FILE bound to: active_test_bank3.hex - type: string 
+	Parameter MEM_BANK4_FILE bound to: active_test_bank4.hex - type: string 
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/synth_1/.Xil/Vivado-2620-217-29/realtime/clk_wiz_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/synth_1/.Xil/Vivado-2620-217-29/realtime/clk_wiz_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'cpu_top' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/cpu_top.v:3]
+INFO: [Synth 8-6157] synthesizing module 'cpu_core' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/cpu_core.v:5]
+INFO: [Synth 8-6157] synthesizing module 'Controller' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/Controller.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'Controller' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/Controller.v:5]
+INFO: [Synth 8-6157] synthesizing module 'SEXT' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/SEXT.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'SEXT' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/SEXT.v:5]
+INFO: [Synth 8-6157] synthesizing module 'RF' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/RF.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'RF' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/RF.v:3]
+INFO: [Synth 8-6157] synthesizing module 'ALU' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/ALU.v:5]
+INFO: [Synth 8-6157] synthesizing module 'multiplier' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/multiplier.v:3]
+	Parameter WIDTH bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'multiplier' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/multiplier.v:3]
+INFO: [Synth 8-6157] synthesizing module 'multiplier__parameterized0' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/multiplier.v:3]
+	Parameter WIDTH bound to: 33 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'multiplier__parameterized0' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/multiplier.v:3]
+INFO: [Synth 8-6157] synthesizing module 'divider' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/divider.v:3]
+	Parameter WIDTH bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'divider' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/divider.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'ALU' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/ALU.v:5]
+INFO: [Synth 8-6157] synthesizing module 'MREQ' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/MREQ.v:5]
+INFO: [Synth 8-155] case statement is not full and has no default [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/MREQ.v:28]
+INFO: [Synth 8-6155] done synthesizing module 'MREQ' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/MREQ.v:5]
+INFO: [Synth 8-6157] synthesizing module 'MEXT' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/MEXT.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'MEXT' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/MEXT.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'cpu_core' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/cpu_core.v:5]
+INFO: [Synth 8-6157] synthesizing module 'icache' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/icache.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'icache' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/icache.v:3]
+INFO: [Synth 8-6157] synthesizing module 'dcache' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/dcache.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'dcache' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/dcache.v:3]
+INFO: [Synth 8-6157] synthesizing module 'axi_master' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/axi_master.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'axi_master' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/axi_master.v:3]
+INFO: [Synth 8-6157] synthesizing module 'io_peripherals' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/io_peripherals.v:5]
+	Parameter CLK_FREQ bound to: 50000000 - type: integer 
+INFO: [Synth 8-6157] synthesizing module 'uart_simple' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/uart_simple.v:3]
+	Parameter CLK_FREQ bound to: 50000000 - type: integer 
+	Parameter BAUD bound to: 115200 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'uart_simple' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/uart_simple.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'io_peripherals' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/io_peripherals.v:5]
+INFO: [Synth 8-6157] synthesizing module 'seven_seg' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/seven_seg.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'seven_seg' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/seven_seg.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'cpu_top' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/cpu_top.v:3]
+WARNING: [Synth 8-7071] port 'debug_wb_valid' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7071] port 'debug_wb_inst' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7071] port 'debug_wb_pc' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7071] port 'debug_wb_rf_we' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7071] port 'debug_wb_rf_wR' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7071] port 'debug_wb_rf_wD' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7071] port 'debug_mem_pc' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7071] port 'debug_mem_we' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7071] port 'debug_mem_waddr' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7071] port 'debug_mem_wdata' of module 'cpu_top' is unconnected for instance 'U_cpu' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+WARNING: [Synth 8-7023] instance 'U_cpu' of module 'cpu_top' has 44 connections declared, but only 34 given [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:80]
+INFO: [Synth 8-6157] synthesizing module 'axi_bram_slave' [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/axi_bram_slave.v:3]
+	Parameter RAM_WORDS bound to: 40960 - type: integer 
+	Parameter BANK0_INIT_FILE bound to: active_test_bank0.hex - type: string 
+	Parameter BANK1_INIT_FILE bound to: active_test_bank1.hex - type: string 
+	Parameter BANK2_INIT_FILE bound to: active_test_bank2.hex - type: string 
+	Parameter BANK3_INIT_FILE bound to: active_test_bank3.hex - type: string 
+	Parameter BANK4_INIT_FILE bound to: active_test_bank4.hex - type: string 
+INFO: [Synth 8-3876] $readmem data file 'active_test_bank0.hex' is read successfully [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/axi_bram_slave.v:95]
+INFO: [Synth 8-3876] $readmem data file 'active_test_bank1.hex' is read successfully [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/axi_bram_slave.v:97]
+INFO: [Synth 8-3876] $readmem data file 'active_test_bank2.hex' is read successfully [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/axi_bram_slave.v:99]
+INFO: [Synth 8-3876] $readmem data file 'active_test_bank3.hex' is read successfully [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/axi_bram_slave.v:101]
+INFO: [Synth 8-3876] $readmem data file 'active_test_bank4.hex' is read successfully [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/axi_bram_slave.v:103]
+INFO: [Synth 8-6155] done synthesizing module 'axi_bram_slave' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/axi_bram_slave.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'miniRV_SoC' (0#1) [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/miniRV_SoC.v:5]
+WARNING: [Synth 8-6014] Unused sequential element md_op_reg was removed.  [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/rtl/ALU.v:52]
+WARNING: [Synth 8-7129] Port s_axi_awlen[7] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awlen[6] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awlen[5] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awlen[4] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awlen[3] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awlen[2] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awlen[1] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awlen[0] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awsize[2] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awsize[1] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awsize[0] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awburst[1] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_awburst[0] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_wlast in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_arsize[2] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_arsize[1] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_arsize[0] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_arburst[1] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port s_axi_arburst[0] in module axi_bram_slave is either unconnected or has no load
+WARNING: [Synth 8-7129] Port m_axi_bresp[1] in module axi_master is either unconnected or has no load
+WARNING: [Synth 8-7129] Port m_axi_bresp[0] in module axi_master is either unconnected or has no load
+WARNING: [Synth 8-7129] Port m_axi_rresp[1] in module axi_master is either unconnected or has no load
+WARNING: [Synth 8-7129] Port m_axi_rresp[0] in module axi_master is either unconnected or has no load
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:08 ; elapsed = 00:00:08 . Memory (MB): peak = 1497.777 ; gain = 618.062
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 1497.777 ; gain = 618.062
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 1497.777 ; gain = 618.062
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.110 . Memory (MB): peak = 1497.777 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [d:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/miniRV.gen/sources_1/ip/clk_wiz_0/clk_wiz_0/clk_wiz_0_in_context.xdc] for cell 'U_CLKGEN'
+Finished Parsing XDC File [d:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/miniRV.gen/sources_1/ip/clk_wiz_0/clk_wiz_0/clk_wiz_0_in_context.xdc] for cell 'U_CLKGEN'
+Parsing XDC File [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/xdc/miniRV_SoC.xdc]
+Finished Parsing XDC File [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/xdc/miniRV_SoC.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/xdc/miniRV_SoC.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/miniRV_SoC_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/miniRV_SoC_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Parsing XDC File [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/xdc/clock.xdc]
+WARNING: [Constraints 18-619] A clock with name 'fpga_clk' already exists, overwriting the previous clock with the same name. [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/xdc/clock.xdc:1]
+Finished Parsing XDC File [D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/src/xdc/clock.xdc]
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1588.438 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.020 . Memory (MB): peak = 1588.438 ; gain = 0.000
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 1588.438 ; gain = 708.723
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7a35tcsg324-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 1588.438 ; gain = 708.723
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+Applied set_property IO_BUFFER_TYPE = NONE for fpga_clk. (constraint file  d:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/miniRV.gen/sources_1/ip/clk_wiz_0/clk_wiz_0/clk_wiz_0_in_context.xdc, line 3).
+Applied set_property CLOCK_BUFFER_TYPE = NONE for fpga_clk. (constraint file  d:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/miniRV.gen/sources_1/ip/clk_wiz_0/clk_wiz_0/clk_wiz_0_in_context.xdc, line 4).
+Applied set_property KEEP_HIERARCHY = SOFT for U_CLKGEN. (constraint file  auto generated constraint).
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:17 ; elapsed = 00:00:18 . Memory (MB): peak = 1588.438 ; gain = 708.723
+---------------------------------------------------------------------------------
+INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'icache'
+INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'dcache'
+INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'axi_master'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                 ST_IDLE |                              001 |                               00
+                  ST_REQ |                              010 |                               01
+                 ST_WAIT |                              100 |                               10
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'one-hot' in module 'icache'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                 ST_IDLE |                        000000001 |                             0000
+              ST_IO_WREQ |                        000000010 |                             0111
+             ST_IO_WWAIT |                        000000100 |                             1000
+               ST_WR_REQ |                        000001000 |                             0011
+              ST_WR_WAIT |                        000010000 |                             0100
+              ST_IO_RREQ |                        000100000 |                             0101
+             ST_IO_RWAIT |                        001000000 |                             0110
+               ST_RD_REQ |                        010000000 |                             0001
+              ST_RD_WAIT |                        100000000 |                             0010
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'one-hot' in module 'dcache'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                 ST_IDLE |                            00001 |                              000
+                ST_WRITE |                            00100 |                              011
+                ST_WRESP |                            00010 |                              100
+                ST_RADDR |                            10000 |                              001
+                ST_RDATA |                            01000 |                              010
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'one-hot' in module 'axi_master'
+WARNING: [Synth 8-6841] Block RAM (mem0_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+WARNING: [Synth 8-6841] Block RAM (mem1_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+WARNING: [Synth 8-6841] Block RAM (mem2_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+WARNING: [Synth 8-6841] Block RAM (mem3_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+WARNING: [Synth 8-6841] Block RAM (mem4_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 1588.438 ; gain = 708.723
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input   66 Bit       Adders := 1     
+	   2 Input   64 Bit       Adders := 2     
+	   3 Input   33 Bit       Adders := 2     
+	   2 Input   32 Bit       Adders := 5     
+	   3 Input   32 Bit       Adders := 1     
+	   2 Input   18 Bit       Adders := 1     
+	   2 Input   16 Bit       Adders := 1     
+	   2 Input    9 Bit       Adders := 2     
+	   2 Input    8 Bit       Adders := 1     
+	   2 Input    6 Bit       Adders := 1     
+	   2 Input    5 Bit       Adders := 3     
+	   2 Input    4 Bit       Adders := 3     
+	   2 Input    2 Bit       Adders := 1     
++---XORs : 
+	   2 Input     32 Bit         XORs := 1     
+	   2 Input      1 Bit         XORs := 3     
++---Registers : 
+	              128 Bit    Registers := 3     
+	               66 Bit    Registers := 3     
+	               64 Bit    Registers := 4     
+	               33 Bit    Registers := 3     
+	               32 Bit    Registers := 52    
+	               16 Bit    Registers := 2     
+	               10 Bit    Registers := 1     
+	                9 Bit    Registers := 2     
+	                8 Bit    Registers := 5     
+	                6 Bit    Registers := 1     
+	                5 Bit    Registers := 9     
+	                4 Bit    Registers := 7     
+	                3 Bit    Registers := 3     
+	                2 Bit    Registers := 5     
+	                1 Bit    Registers := 176   
++---RAMs : 
+	             256K Bit	(8192 X 32 bit)          RAMs := 5     
+	              992 Bit	(31 X 32 bit)          RAMs := 1     
++---Muxes : 
+	   5 Input  128 Bit        Muxes := 3     
+	   2 Input   66 Bit        Muxes := 4     
+	   2 Input   64 Bit        Muxes := 4     
+	   2 Input   33 Bit        Muxes := 7     
+	   2 Input   32 Bit        Muxes := 60    
+	   4 Input   32 Bit        Muxes := 6     
+	   5 Input   32 Bit        Muxes := 1     
+	   3 Input   32 Bit        Muxes := 1     
+	   9 Input   32 Bit        Muxes := 1     
+	   6 Input   32 Bit        Muxes := 1     
+	   8 Input   32 Bit        Muxes := 10    
+	   2 Input   16 Bit        Muxes := 5     
+	   2 Input   10 Bit        Muxes := 1     
+	   9 Input    9 Bit        Muxes := 1     
+	   2 Input    9 Bit        Muxes := 9     
+	   2 Input    8 Bit        Muxes := 12    
+	   2 Input    6 Bit        Muxes := 1     
+	  21 Input    5 Bit        Muxes := 1     
+	   2 Input    5 Bit        Muxes := 4     
+	   5 Input    5 Bit        Muxes := 1     
+	   2 Input    4 Bit        Muxes := 13    
+	   5 Input    4 Bit        Muxes := 1     
+	   3 Input    4 Bit        Muxes := 1     
+	   4 Input    4 Bit        Muxes := 1     
+	   5 Input    3 Bit        Muxes := 1     
+	   6 Input    3 Bit        Muxes := 2     
+	   2 Input    3 Bit        Muxes := 1     
+	   4 Input    2 Bit        Muxes := 1     
+	   2 Input    2 Bit        Muxes := 2     
+	   5 Input    2 Bit        Muxes := 1     
+	   2 Input    1 Bit        Muxes := 279   
+	   3 Input    1 Bit        Muxes := 68    
+	   9 Input    1 Bit        Muxes := 71    
+	   5 Input    1 Bit        Muxes := 13    
+	   6 Input    1 Bit        Muxes := 5     
+	   8 Input    1 Bit        Muxes := 5     
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 90 (col length:60)
+BRAMs: 100 (col length: RAMB18 60 RAMB36 30)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7080] Parallel synthesis criteria is not met
+WARNING: [Synth 8-7129] Port m_axi_bresp[1] in module axi_master is either unconnected or has no load
+WARNING: [Synth 8-7129] Port m_axi_bresp[0] in module axi_master is either unconnected or has no load
+WARNING: [Synth 8-7129] Port m_axi_rresp[1] in module axi_master is either unconnected or has no load
+WARNING: [Synth 8-7129] Port m_axi_rresp[0] in module axi_master is either unconnected or has no load
+WARNING: [Synth 8-6841] Block RAM (U_MAIN_MEMORY/mem0_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+WARNING: [Synth 8-6841] Block RAM (U_MAIN_MEMORY/mem1_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+WARNING: [Synth 8-6841] Block RAM (U_MAIN_MEMORY/mem2_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+WARNING: [Synth 8-6841] Block RAM (U_MAIN_MEMORY/mem3_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+WARNING: [Synth 8-6841] Block RAM (U_MAIN_MEMORY/mem4_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (13) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:40 ; elapsed = 00:00:40 . Memory (MB): peak = 1588.438 ; gain = 708.723
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Block RAM: Preliminary Mapping Report (see note below)
++------------+------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|Module Name | RTL Object             | PORT A (Depth x Width) | W | R | PORT B (Depth x Width) | W | R | Ports driving FF | RAMB18 | RAMB36 | 
++------------+------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|miniRV_SoC  | U_MAIN_MEMORY/mem0_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
+|miniRV_SoC  | U_MAIN_MEMORY/mem1_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
+|miniRV_SoC  | U_MAIN_MEMORY/mem2_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
+|miniRV_SoC  | U_MAIN_MEMORY/mem3_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
+|miniRV_SoC  | U_MAIN_MEMORY/mem4_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
++------------+------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+
+Note: The table above is a preliminary report that shows the Block RAMs at the current stage of the synthesis flow. Some Block RAMs may be reimplemented as non Block RAM primitives later in the synthesis flow. Multiple instantiated Block RAMs are reported only once. 
+
+Distributed RAM: Preliminary Mapping Report (see note below)
++------------------+--------------------+----------------+----------------------+--------------+
+|Module Name       | RTL Object         | Inference      | Size (Depth x Width) | Primitives   | 
++------------------+--------------------+----------------+----------------------+--------------+
+|U_cpu/U_core/U_RF | regs_reg           | Implied        | 32 x 32              | RAM32M x 12  | 
+|U_cpu             | U_ICACHE/tags_reg  | User Attribute | 64 x 22              | RAM64M x 8   | 
+|U_cpu             | U_ICACHE/lines_reg | User Attribute | 64 x 128             | RAM64M x 43  | 
+|U_cpu             | U_DCACHE/tags_reg  | User Attribute | 64 x 22              | RAM64M x 8   | 
+|U_cpu             | U_DCACHE/lines_reg | User Attribute | 64 x 128             | RAM64M x 43  | 
++------------------+--------------------+----------------+----------------------+--------------+
+
+Note: The table above is a preliminary report that shows the Distributed RAMs at the current stage of the synthesis flow. Some Distributed RAMs may be reimplemented as non Distributed RAM primitives later in the synthesis flow. Multiple instantiated RAMs are reported only once.
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-565] redefining clock 'fpga_clk'
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:45 ; elapsed = 00:00:46 . Memory (MB): peak = 1588.438 ; gain = 708.723
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:57 ; elapsed = 00:00:58 . Memory (MB): peak = 1616.828 ; gain = 737.113
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Block RAM: Final Mapping Report
++------------+------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|Module Name | RTL Object             | PORT A (Depth x Width) | W | R | PORT B (Depth x Width) | W | R | Ports driving FF | RAMB18 | RAMB36 | 
++------------+------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|miniRV_SoC  | U_MAIN_MEMORY/mem0_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
+|miniRV_SoC  | U_MAIN_MEMORY/mem1_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
+|miniRV_SoC  | U_MAIN_MEMORY/mem2_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
+|miniRV_SoC  | U_MAIN_MEMORY/mem3_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
+|miniRV_SoC  | U_MAIN_MEMORY/mem4_reg | 8 K x 32(READ_FIRST)   | W |   | 8 K x 32(WRITE_FIRST)  |   | R | Port A and B     | 0      | 8      | 
++------------+------------------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+
+
+Distributed RAM: Final Mapping Report
++------------------+--------------------+----------------+----------------------+--------------+
+|Module Name       | RTL Object         | Inference      | Size (Depth x Width) | Primitives   | 
++------------------+--------------------+----------------+----------------------+--------------+
+|U_cpu/U_core/U_RF | regs_reg           | Implied        | 32 x 32              | RAM32M x 12  | 
+|U_cpu             | U_ICACHE/tags_reg  | User Attribute | 64 x 22              | RAM64M x 8   | 
+|U_cpu             | U_ICACHE/lines_reg | User Attribute | 64 x 128             | RAM64M x 43  | 
+|U_cpu             | U_DCACHE/tags_reg  | User Attribute | 64 x 22              | RAM64M x 8   | 
+|U_cpu             | U_DCACHE/lines_reg | User Attribute | 64 x 128             | RAM64M x 43  | 
++------------------+--------------------+----------------+----------------------+--------------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+RETIMING: forward move fails for register U_cpu/U_core/exmem_valid_reg along load instance i_2502 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[4] along load instance i_2499 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[3] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[2] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[1] along load instance i_2500 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[0] along load instance i_2500
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rf_we_reg along load instance i_2502
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[4] along load instance i_2462 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[4] along load instance i_2499 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[3] along load instance i_2462
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[3] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[2] along load instance i_2461 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[2] along load instance i_2499 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[1] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[1] along load instance i_2500
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[0] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[0] along load instance i_2500
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rf_wsel_reg[1] along load instance i_2502
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rf_wsel_reg[0] along load instance i_2502
+RETIMING: forward move fails for register U_cpu/U_core/exmem_valid_reg along load instance i_2502 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[4] along load instance i_2499 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[3] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[2] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[1] along load instance i_2500 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[0] along load instance i_2500
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[4] along load instance i_2462 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[3] along load instance i_2462
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[2] along load instance i_2461 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[1] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[0] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rf_we_reg along load instance i_2502
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[4] along load instance i_2462
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[4] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[3] along load instance i_2462
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[3] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[2] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[2] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[1] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[1] along load instance i_2500
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[0] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[0] along load instance i_2500
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rf_wsel_reg[1] along load instance i_2502
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rf_wsel_reg[0] along load instance i_2502
+RETIMING: forward move fails for register U_cpu/U_core/exmem_valid_reg along load instance i_2502 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[4] along load instance i_2499 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[3] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[2] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[1] along load instance i_2500 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rd_reg[0] along load instance i_2500
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[4] along load instance i_2462 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[3] along load instance i_2462
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[2] along load instance i_2461 due to (UNCOMPATIBLE REGISTERS)
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[1] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/memwb_rd_reg[0] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rf_we_reg along load instance i_2502
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[4] along load instance i_2462
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[4] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[3] along load instance i_2462
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[3] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[2] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[2] along load instance i_2499
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[1] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[1] along load instance i_2500
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[0] along load instance i_2461
+RETIMING: forward move fails for register U_cpu/U_core/idex_rs2_reg[0] along load instance i_2500
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rf_wsel_reg[1] along load instance i_2502
+RETIMING: forward move fails for register U_cpu/U_core/exmem_rf_wsel_reg[0] along load instance i_2502
+INFO: [Synth 8-5816] Retiming module `miniRV_SoC`
+	Numbers of forward move = 2, and backward move = 100
+
+	Retimed registers names:
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[0]_bret
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[0]_bret__0
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[0]_bret__1
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[0]_bret__2
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[0]_bret__3
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[0]_bret__4
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[1]_bret
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[1]_bret__0
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[1]_bret__1
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[1]_bret__2
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[1]_bret__3
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[1]_bret__4
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[2]_bret
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[2]_bret__0
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[2]_bret__1
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[2]_bret__2
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[2]_bret__3
+		U_cpu/U_ICACHE/FSM_onehot_state_reg[2]_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[0]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[10]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[11]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[12]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[13]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[14]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[15]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[16]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[17]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[18]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[19]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[1]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[20]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[21]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[22]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[23]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[24]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[25]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[26]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[27]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[28]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[29]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[2]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[30]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[31]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[3]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[4]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[5]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[6]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[7]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[8]_bret__3_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__0_bret
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__0_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__0_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__0_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__0_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__0_bret__4
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__3_bret
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__3_bret__0
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__3_bret__1
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__3_bret__2
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__3_bret__3
+		U_cpu/U_ICACHE/cpu_data_reg[9]_bret__3_bret__4
+		U_cpu/U_core/exmem_rd_reg[4]_fret
+		U_cpu/U_core/fetch_pc_reg[31]_bret
+		U_cpu/U_core/fetch_pc_reg[31]_bret__0
+		U_cpu/U_core/fetch_pc_reg[31]_bret__1
+		U_cpu/U_core/fetch_pc_reg[31]_bret__10
+		U_cpu/U_core/fetch_pc_reg[31]_bret__11
+		U_cpu/U_core/fetch_pc_reg[31]_bret__12
+		U_cpu/U_core/fetch_pc_reg[31]_bret__13
+		U_cpu/U_core/fetch_pc_reg[31]_bret__14
+		U_cpu/U_core/fetch_pc_reg[31]_bret__15
+		U_cpu/U_core/fetch_pc_reg[31]_bret__16
+		U_cpu/U_core/fetch_pc_reg[31]_bret__17
+		U_cpu/U_core/fetch_pc_reg[31]_bret__18
+		U_cpu/U_core/fetch_pc_reg[31]_bret__19
+		U_cpu/U_core/fetch_pc_reg[31]_bret__2
+		U_cpu/U_core/fetch_pc_reg[31]_bret__20
+		U_cpu/U_core/fetch_pc_reg[31]_bret__21
+		U_cpu/U_core/fetch_pc_reg[31]_bret__22
+		U_cpu/U_core/fetch_pc_reg[31]_bret__23
+		U_cpu/U_core/fetch_pc_reg[31]_bret__24
+		U_cpu/U_core/fetch_pc_reg[31]_bret__25
+		U_cpu/U_core/fetch_pc_reg[31]_bret__26
+		U_cpu/U_core/fetch_pc_reg[31]_bret__27
+		U_cpu/U_core/fetch_pc_reg[31]_bret__28
+		U_cpu/U_core/fetch_pc_reg[31]_bret__29
+		U_cpu/U_core/fetch_pc_reg[31]_bret__3
+		U_cpu/U_core/fetch_pc_reg[31]_bret__30
+		U_cpu/U_core/fetch_pc_reg[31]_bret__4
+		U_cpu/U_core/fetch_pc_reg[31]_bret__5
+		U_cpu/U_core/fetch_pc_reg[31]_bret__6
+		U_cpu/U_core/fetch_pc_reg[31]_bret__7
+		U_cpu/U_core/fetch_pc_reg[31]_bret__8
+		U_cpu/U_core/fetch_pc_reg[31]_bret__9
+		U_cpu/U_core/memwb_rd_reg[4]_fret
+ 
+
+INFO: [Synth 8-5816] Retiming module `miniRV_SoC' done
+
+
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/FSM_onehot_state_reg[2]) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/FSM_onehot_state_reg[1]) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/FSM_onehot_state_reg[0]) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[0]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[0]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[1]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[1]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[2]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[2]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[3]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[3]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[4]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[4]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[5]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[5]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[6]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[6]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[7]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[7]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[8]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[8]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[9]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[9]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[10]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[10]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[11]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[11]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[12]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[12]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[13]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[13]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[14]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[14]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[15]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[15]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[16]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[16]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[17]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[17]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[18]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[18]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[19]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[19]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[20]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[20]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[21]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[21]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[22]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[22]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[23]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[23]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[24]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[24]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[25]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[25]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[26]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[26]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[27]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[27]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[28]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[28]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[29]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[29]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[30]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[30]_bret__3) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[31]_bret__0) is unused and will be removed from module miniRV_SoC.
+WARNING: [Synth 8-3332] Sequential element (U_cpu/U_ICACHE/cpu_data_reg[31]_bret__3) is unused and will be removed from module miniRV_SoC.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem0_reg_0_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem0_reg_0_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem0_reg_1_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem0_reg_1_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem0_reg_2_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem0_reg_2_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem0_reg_3_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem0_reg_3_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem1_reg_0_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem1_reg_0_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem1_reg_1_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem1_reg_1_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem1_reg_2_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem1_reg_2_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem1_reg_3_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem1_reg_3_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem2_reg_0_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem2_reg_0_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem2_reg_1_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem2_reg_1_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem2_reg_2_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem2_reg_2_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem2_reg_3_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem2_reg_3_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem3_reg_0_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem3_reg_0_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem3_reg_1_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem3_reg_1_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem3_reg_2_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem3_reg_2_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem3_reg_3_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem3_reg_3_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem4_reg_0_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem4_reg_0_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem4_reg_1_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem4_reg_1_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem4_reg_2_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem4_reg_2_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem4_reg_3_0 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+INFO: [Synth 8-7052] The timing for the instance U_MAIN_MEMORY/mem4_reg_3_1 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:01:16 ; elapsed = 00:01:17 . Memory (MB): peak = 2018.699 ; gain = 1138.984
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:01:21 ; elapsed = 00:01:22 . Memory (MB): peak = 2018.699 ; gain = 1138.984
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:21 ; elapsed = 00:01:22 . Memory (MB): peak = 2018.699 ; gain = 1138.984
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:21 ; elapsed = 00:01:22 . Memory (MB): peak = 2018.699 ; gain = 1138.984
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:21 ; elapsed = 00:01:22 . Memory (MB): peak = 2018.699 ; gain = 1138.984
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:21 ; elapsed = 00:01:22 . Memory (MB): peak = 2018.699 ; gain = 1138.984
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:21 ; elapsed = 00:01:22 . Memory (MB): peak = 2018.699 ; gain = 1138.984
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Retiming Report:
++--------------------+-----+
+|Retiming summary:   |     | 
++--------------------+-----+
+|Forward Retiming    | 2   | 
+|Backward Retiming   | 100 | 
+|New registers added | 532 | 
+|Registers deleted   | 66  | 
++--------------------+-----+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++------+--------------+----------+
+|      |BlackBox name |Instances |
++------+--------------+----------+
+|1     |clk_wiz_0     |         1|
++------+--------------+----------+
+
+Report Cell Usage: 
++------+---------+------+
+|      |Cell     |Count |
++------+---------+------+
+|1     |clk_wiz  |     1|
+|2     |CARRY4   |   206|
+|3     |LUT1     |   276|
+|4     |LUT2     |   561|
+|5     |LUT3     |   624|
+|6     |LUT4     |   438|
+|7     |LUT5     |   665|
+|8     |LUT6     |  1114|
+|9     |MUXF7    |    26|
+|10    |MUXF8    |     4|
+|11    |RAM32M   |    10|
+|12    |RAM32X1D |     4|
+|13    |RAM64M   |   100|
+|14    |RAMB36E1 |    40|
+|31    |FDCE     |  2905|
+|32    |FDPE     |   131|
+|33    |IBUF     |    18|
+|34    |OBUF     |    41|
++------+---------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:21 ; elapsed = 00:01:22 . Memory (MB): peak = 2018.699 ; gain = 1138.984
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 83 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:01:10 ; elapsed = 00:01:19 . Memory (MB): peak = 2018.699 ; gain = 1048.324
+Synthesis Optimization Complete : Time (s): cpu = 00:01:21 ; elapsed = 00:01:22 . Memory (MB): peak = 2018.699 ; gain = 1138.984
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.097 . Memory (MB): peak = 2018.699 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 390 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 2018.699 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 114 instances were transformed.
+  RAM32M => RAM32M (RAMD32(x6), RAMS32(x2)): 10 instances
+  RAM32X1D => RAM32X1D (RAMD32(x2)): 4 instances
+  RAM64M => RAM64M (RAMD64E(x4)): 100 instances
+
+Synth Design complete | Checksum: de434174
+INFO: [Common 17-83] Releasing license: Synthesis
+109 Infos, 119 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:01:27 ; elapsed = 00:01:28 . Memory (MB): peak = 2018.699 ; gain = 1531.867
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.009 . Memory (MB): peak = 2018.699 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'D:/miniRV_CTEST_CoreMark_v8/miniRV_lab2_C_TEST0-4_CoreMark_50MHz_v8_MEM_handshake_fixed/miniRV_complete/vivado_c_test_board_50MHz/miniRV_c_test_board_50MHz.runs/synth_1/miniRV_SoC.dcp' has been generated.
+INFO: [runtcl-4] Executing : report_utilization -file miniRV_SoC_utilization_synth.rpt -pb miniRV_SoC_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Wed Jul 29 10:42:38 2026...

@@ -1,0 +1,40 @@
+miniRV 实验二 Trace 下板版本验证记录
+日期：2026-07-27
+
+一、课程程序
+start.bin 大小：16496 字节
+32 位字数：4124
+尾部补零：0 字节
+SHA256：04d7dd68a4b0b20051c168b2ee5608abc5395cd6759a786fa5365075728e3fb7
+start.bin、start.dump 来源：课程 cdp-tests miniRV 分支
+
+二、转换结果
+tools/bin2coe.py 同时生成：
+software/trace/start.coe
+software/trace/start.hex
+
+COE 使用逗号分隔数据项并用分号结束；HEX 每行一个 32 位字。
+脚本已自动校验生成内容与小端 start.bin 一致。
+
+三、完整 SoC 功能回归
+TRACE BOARD TEST PASSED: display = 0x25000025
+C_TEST: SWITCH + LED + DIG + UART TX/RX + TIMER PASSED
+PIPELINE CPU: ALL 44 miniRV INSTRUCTIONS PASSED
+HAZARD TEST PASSED: load-use + forwarding + flush
+
+四、BRAM 综合映射检查
+原 128 KiB RAM 的异步复位读写模式已拆分为：
+1. 不带复位的同步 RAM 读写块；
+2. 独立的 AXI 状态与复位控制块。
+
+Xilinx 7 系列映射检查结果：
+RAMB36E1：32
+FDCE：87
+
+主存已映射为 Block RAM，不再拆成 1048576 位普通寄存器，对应修复
+Vivado Synth 8-3391。
+
+五、仍需本地完成
+本环境没有 Vivado 2023.2，最终 bitstream、Post-Route WNS/TNS、DRC 和
+EGO1 真机显示需在用户电脑执行 create_trace_board_project.tcl 与
+build_trace_board_bitstream.tcl 后实测。
