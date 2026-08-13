@@ -3,7 +3,7 @@
 Oct 13 2023
 20:47:58
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/miniLA.sim/sim_1/behav/xsim/glbl.v,1697210495,verilog,,,,glbl,,,,,,,,
-D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ALU.v,1785266005,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/Controller.v,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,ALU,,,../../../../src/rtl,,,,,
+D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ALU.v,1785427082,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/Controller.v,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,ALU,,,../../../../src/rtl,,,,,
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/Controller.v,1784633195,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/DCache.v,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,Controller,,,../../../../src/rtl,,,,,
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/DCache.v,1785259241,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/EXT.v,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,DCache,,,../../../../src/rtl,,,,,
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/EXT.v,1785177314,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ICache.v,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,EXT,,,../../../../src/rtl,,,,,
@@ -14,7 +14,7 @@ D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/RF.v,1784633195
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/axi_bus.v,1785259279,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/cpu_core.v,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,axi_bus,,,../../../../src/rtl,,,,,
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/cpu_core.v,1785342436,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/cpu_top.v,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,cpu_core,,,../../../../src/rtl,,,,,
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/cpu_top.v,1785168475,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/divider.v,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,cpu_top,,,../../../../src/rtl,,,,,
-D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,1785340963,verilog,,,,,,,,,,,,
+D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,1785424511,verilog,,,,,,,,,,,,
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/divider.v,1785176387,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v,,divider,,,../../../../src/rtl,,,,,
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ip/bram_axi/sim/bram_axi.v,1785337149,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ALU.v,,bram_axi,,,../../../../src/rtl,,,,,
 D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v,1785338236,verilog,,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/multiplier.v,D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/defines.vh,miniLA_SoC,,,../../../../src/rtl,,,,,

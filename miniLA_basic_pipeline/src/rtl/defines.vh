@@ -68,7 +68,7 @@
 `define WR_RD       1'b1
 `define WR_Rr1      1'b0
 
-`define WB_PC4      2'b00    // BL/JIRL link address pc+4
+`define WB_PC4      2'b00    
 `define WB_RAM      2'b01
 `define WB_EXT      2'b10
 `define WB_ALU      2'b11

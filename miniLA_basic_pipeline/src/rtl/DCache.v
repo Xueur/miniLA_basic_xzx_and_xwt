@@ -2,34 +2,32 @@
 
 `include "defines.vh"
 
-// Direct-mapped Data Cache (Write-through + Write-allocate)
-//   Capacity: 64 lines x 128 bits = 1KB
-//   Direct-mapped, write-through + write-allocate
+// 直连映射数据Cache (写穿+写分配)
 
 module DCache(
     input  wire         cpu_clk,
-    input  wire         cpu_rst,        // high active
-    // Interface to CPU
-    input  wire [ 3:0]  data_ren,       // read enable
-    input  wire [31:0]  data_addr,      // address (read/write shared)
-    output reg          data_valid,     // read data valid
-    output reg  [31:0]  data_rdata,     // read data to CPU
-    input  wire [ 3:0]  data_wen,       // write enable
-    input  wire [31:0]  data_wdata,     // write data
-    output reg          data_wresp,     // write response
-    // Interface to Bus
-    input  wire         dev_wrdy,       // bus write ready
-    output wire [ 3:0]  cpu_wen,        // write enable to bus (combinational)
-    output wire [31:0]  cpu_waddr,      // write address to bus (combinational)
-    output wire [31:0]  cpu_wdata,      // write data to bus (combinational)
-    input  wire         dev_rrdy,       // bus read ready
-    output wire [ 3:0]  cpu_ren,        // read enable to bus (combinational)
-    output wire [31:0]  cpu_raddr,      // read address to bus (combinational)
-    input  wire         dev_rvalid,     // bus read data valid
-    input  wire [`DC_BLK_SIZE-1:0] dev_rdata  // read data from bus (128 bits)
+    input  wire         cpu_rst,        // 高有效
+    // CPU接口
+    input  wire [ 3:0]  data_ren,       // 读使能
+    input  wire [31:0]  data_addr,      // 地址 (读写共享)
+    output reg          data_valid,     // 读数据有效
+    output reg  [31:0]  data_rdata,     // 读数据
+    input  wire [ 3:0]  data_wen,       // 写使能
+    input  wire [31:0]  data_wdata,     // 写数据
+    output reg          data_wresp,     // 写响应
+    // 总线接口
+    input  wire         dev_wrdy,       // 总线写就绪
+    output wire [ 3:0]  cpu_wen,        // 写使能 (组合)
+    output wire [31:0]  cpu_waddr,      // 写地址(组合)
+    output wire [31:0]  cpu_wdata,      // 写数据 (组合)
+    input  wire         dev_rrdy,       // 总线读就绪
+    output wire [ 3:0]  cpu_ren,        // 读使能 (组合)
+    output wire [31:0]  cpu_raddr,      // 读地址(组合)
+    input  wire         dev_rvalid,     // 总线读数据有效
+    input  wire [`DC_BLK_SIZE-1:0] dev_rdata  // 读数据(128位)
 );
 
-    localparam INDEX_W = 6;  // 64 lines, 6-bit index
+    localparam INDEX_W = 6;  // 64行, 6位索引
     localparam TAG_W   = 5;
 
     localparam ST_IDLE   = 4'd0;

@@ -1,0 +1,90 @@
+
+*** Running vivado
+    with args -log miniLA_SoC.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source miniLA_SoC.tcl
+
+
+ECHO 处于关闭状态。
+ECHO 处于关闭状态。
+
+****** Vivado v2023.2 (64-bit)
+  **** SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+  **** IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+  **** SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source miniLA_SoC.tcl -notrace
+create_project: Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 486.871 ; gain = 179.332
+Command: synth_design -top miniLA_SoC -part xc7a35tcsg324-1
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7a35t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a35t'
+INFO: [Device 21-403] Loading part xc7a35tcsg324-1
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 34192
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:05 ; elapsed = 00:00:06 . Memory (MB): peak = 1329.059 ; gain = 439.984
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-6901] identifier 'io_write_req' is used before its declaration [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:87]
+WARNING: [Synth 8-6901] identifier 'io_read_req' is used before its declaration [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:93]
+INFO: [Synth 8-6157] synthesizing module 'miniLA_SoC' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:5]
+INFO: [Synth 8-6157] synthesizing module 'cpu_top' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/cpu_top.v:5]
+INFO: [Synth 8-6157] synthesizing module 'cpu_core' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/cpu_core.v:5]
+INFO: [Synth 8-6157] synthesizing module 'Controller' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/Controller.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'Controller' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/Controller.v:5]
+INFO: [Synth 8-6157] synthesizing module 'EXT' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/EXT.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'EXT' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/EXT.v:5]
+INFO: [Synth 8-6157] synthesizing module 'RF' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/RF.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'RF' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/RF.v:3]
+INFO: [Synth 8-6157] synthesizing module 'ALU' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ALU.v:5]
+INFO: [Synth 8-6157] synthesizing module 'multiplier' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/multiplier.v:8]
+	Parameter WIDTH bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'multiplier' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/multiplier.v:8]
+INFO: [Synth 8-6157] synthesizing module 'multiplier__parameterized0' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/multiplier.v:8]
+	Parameter WIDTH bound to: 33 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'multiplier__parameterized0' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/multiplier.v:8]
+WARNING: [Synth 8-689] width (64) of port connection 'z' does not match port width (66) of module 'multiplier__parameterized0' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ALU.v:107]
+INFO: [Synth 8-6157] synthesizing module 'divider' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/divider.v:10]
+	Parameter WIDTH bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'divider' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/divider.v:10]
+INFO: [Synth 8-6157] synthesizing module 'divider__parameterized0' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/divider.v:10]
+	Parameter WIDTH bound to: 33 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'divider__parameterized0' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/divider.v:10]
+WARNING: [Synth 8-689] width (32) of port connection 'z' does not match port width (33) of module 'divider__parameterized0' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ALU.v:130]
+WARNING: [Synth 8-689] width (32) of port connection 'r' does not match port width (33) of module 'divider__parameterized0' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ALU.v:131]
+INFO: [Synth 8-6155] done synthesizing module 'ALU' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ALU.v:5]
+INFO: [Synth 8-6157] synthesizing module 'MREQ' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/MREQ.v:5]
+INFO: [Synth 8-155] case statement is not full and has no default [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/MREQ.v:29]
+INFO: [Synth 8-6155] done synthesizing module 'MREQ' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/MREQ.v:5]
+INFO: [Synth 8-6157] synthesizing module 'MEXT' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/MEXT.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'MEXT' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/MEXT.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'cpu_core' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/cpu_core.v:5]
+INFO: [Synth 8-6157] synthesizing module 'ICache' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ICache.v:7]
+INFO: [Synth 8-6155] done synthesizing module 'ICache' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/ICache.v:7]
+INFO: [Synth 8-6157] synthesizing module 'DCache' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/DCache.v:7]
+INFO: [Synth 8-6155] done synthesizing module 'DCache' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/DCache.v:7]
+INFO: [Synth 8-6157] synthesizing module 'axi_bus' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/axi_bus.v:10]
+INFO: [Synth 8-6155] done synthesizing module 'axi_bus' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/axi_bus.v:10]
+INFO: [Synth 8-6155] done synthesizing module 'cpu_top' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/cpu_top.v:5]
+INFO: [Synth 8-6157] synthesizing module 'bram_axi' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/miniLA.runs/synth_1/.Xil/Vivado-7220-DreamsLentenbe/realtime/bram_axi_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'bram_axi' (0#1) [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/miniLA.runs/synth_1/.Xil/Vivado-7220-DreamsLentenbe/realtime/bram_axi_stub.v:6]
+WARNING: [Synth 8-7071] port 'rsta_busy' of module 'bram_axi' is unconnected for instance 'U_bram' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:125]
+WARNING: [Synth 8-7071] port 'rstb_busy' of module 'bram_axi' is unconnected for instance 'U_bram' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:125]
+WARNING: [Synth 8-7071] port 's_axi_bid' of module 'bram_axi' is unconnected for instance 'U_bram' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:125]
+WARNING: [Synth 8-7071] port 's_axi_rid' of module 'bram_axi' is unconnected for instance 'U_bram' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:125]
+WARNING: [Synth 8-7023] instance 'U_bram' of module 'bram_axi' has 33 connections declared, but only 29 given [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:125]
+ERROR: [Synth 8-439] module 'io_peripherals' not found [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:207]
+	Parameter CLK_FREQ bound to: 32'sb00000010111110101111000010000000 
+	Parameter UART_BAUD bound to: 32'sb00000000000000011100001000000000 
+WARNING: [Synth 8-693] zero replication count - replication ignored [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:211]
+ERROR: [Synth 8-6156] failed synthesizing module 'miniLA_SoC' [D:/Vivado/miniLA_basic_xzx_and_xwt/miniLA_basic_pipeline/src/rtl/miniLA_SoC.v:5]
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:08 . Memory (MB): peak = 1443.328 ; gain = 554.254
+---------------------------------------------------------------------------------
+RTL Elaboration failed
+INFO: [Common 17-83] Releasing license: Synthesis
+40 Infos, 11 Warnings, 0 Critical Warnings and 3 Errors encountered.
+synth_design failed
+ERROR: [Common 17-69] Command failed: Synthesis failed - please see the console or run log file for details
+INFO: [Common 17-206] Exiting Vivado at Wed Aug 12 15:57:01 2026...

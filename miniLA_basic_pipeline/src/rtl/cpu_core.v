@@ -190,7 +190,6 @@ module cpu_core(
     wire        mul_div_busy;
     wire        is_mul_div_ex = idex_is_mul | idex_is_div;
 
-    // mul_div_start: 1-cycle pulse when instruction enters execution
     wire mul_div_start = idex_valid && is_mul_div_ex && !idex_md_started;
 
     ALU U_ALU (
@@ -251,14 +250,10 @@ module cpu_core(
     wire mem_is_load  = exmem_ram_rop != `RAM_EXT_N;
     wire mem_is_store = exmem_ram_wop != `RAM_WE_N;
     wire mem_is_access = exmem_valid && (mem_is_load || mem_is_store);
-    // For loads: only accept daccess_rvalid after request was actually sent
-    // (mem_req_sent=1). Prevents spurious completion from stale cache HITs.
     wire mem_done = mem_is_load ? (daccess_rvalid && mem_req_sent) :
                     mem_is_store ? daccess_wresp : 1'b1;
     wire mem_wait = mem_is_access && !mem_done;
 
-    // exmem_just_changed: suppress daccess_ren for 1 cycle after EX/MEM
-    // advances, giving exmem_alu time to settle with the new instruction.
     reg [31:0] prev_exmem_pc;
     always @(posedge cpu_clk) begin
         if (cpu_rst) prev_exmem_pc <= 32'h0;

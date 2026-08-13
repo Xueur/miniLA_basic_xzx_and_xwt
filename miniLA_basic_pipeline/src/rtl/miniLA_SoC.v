@@ -4,7 +4,7 @@
 
 module miniLA_SoC(
     input  wire         fpga_clk,
-    input  wire         fpga_rst,   // Low Active
+    input  wire         fpga_rst,   // 低有效
     input  wire [15:0]  sw,
     output wire [15:0]  led,
     output wire [ 7:0]  dig_en,
@@ -76,7 +76,7 @@ module miniLA_SoC(
     wire        bram_rlast  ;
     wire        bram_rvalid ;
 
-    // BRAM: address/data pass-through (gated by !IO to avoid AXI protocol violation)
+    // BRAM: 地址/数据直通 (IO访问时关闭)
     assign bram_awaddr  = cpu_awaddr ;
     assign bram_awlen   = cpu_awlen  ;
     assign bram_awsize  = cpu_awsize ;
@@ -155,9 +155,9 @@ module miniLA_SoC(
     );
 
 `ifdef BRAM_USE_IP
-    // Vivado IP: memory init handled by .mif file, no need for initial block
+    // Vivado IP: .mif初始化, 无需initial块
 `else
-    // RTL bram_axi (Verilator): load test binary directly into mem array
+    // RTL仿真: 从meminit.bin加载
     initial begin : bram_init
         integer fd, i, j;
         reg [31:0] tmp [0:8191];
@@ -177,7 +177,6 @@ module miniLA_SoC(
     end
 `endif
 
-    // ---- IO Peripherals (UART, Timer, LED, Switch, DigitalLED) ----
     wire io_read_req  = cpu_arvalid && cpu_araddr[31:16] == 16'hFFFF;
     wire io_write_req = cpu_awvalid && cpu_awaddr[31:16] == 16'hFFFF;
     wire io_rvalid;
@@ -185,21 +184,18 @@ module miniLA_SoC(
     wire io_wresp;
     wire [31:0] dig_value;
 
-    // Suppress AXI to BRAM when IO access
+    // BRAM: IO访问时门控
     assign bram_awvalid = cpu_awvalid && !io_write_req;
     assign bram_arvalid = cpu_arvalid && !io_read_req;
 
-    // Mux read response: IO vs BRAM
     assign cpu_rdata  = io_rvalid ? io_rdata  : bram_rdata;
     assign cpu_rvalid = io_rvalid ? 1'b1      : bram_rvalid;
     assign cpu_rlast  = io_rvalid ? 1'b1      : bram_rlast;
     assign cpu_rresp  = io_rvalid ? 2'b00     : bram_rresp;
-
-    // Mux write response
     assign cpu_bresp  = io_wresp ? 2'b00      : bram_bresp;
     assign cpu_bvalid = io_wresp ? 1'b1       : bram_bvalid;
 
-    // Mux ready: IO is always ready
+    // IO单周期响应
     assign cpu_awready = io_write_req ? 1'b1  : bram_awready;
     assign cpu_wready  = io_write_req ? 1'b1  : bram_wready;
     assign cpu_arready = io_read_req  ? 1'b1  : bram_arready;

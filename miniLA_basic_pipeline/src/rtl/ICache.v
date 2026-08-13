@@ -2,27 +2,25 @@
 
 `include "defines.vh"
 
-// Direct-mapped Instruction Cache
-//   Capacity: 64 lines x 128 bits = 1KB
-//   Direct-mapped, 64 lines x 128 bits = 1KB
+// 直连映射指令Cache
 
 module ICache(
     input  wire         cpu_clk,
-    input  wire         cpu_rst,        // high active
-    // Interface to CPU
-    input  wire         inst_rreq,      // instruction read request
-    input  wire [31:0]  inst_addr,      // instruction address
-    output reg          inst_valid,     // instruction valid
-    output reg  [31:0]  inst_out,       // instruction output
-    // Interface to Read Bus (from axi_bus)
-    input  wire         dev_rrdy,       // bus ready to accept read request
-    output wire [ 3:0]  cpu_ren,        // read enable to bus (combinational)
-    output wire [31:0]  cpu_raddr,      // read address to bus (combinational)
-    input  wire         dev_rvalid,     // bus data valid
-    input  wire [`IC_BLK_SIZE-1:0] dev_rdata  // data from bus (128 bits)
+    input  wire         cpu_rst,        // 高有效
+    // CPU接口
+    input  wire         inst_rreq,      // 指令读请求
+    input  wire [31:0]  inst_addr,      // 指令地址
+    output reg          inst_valid,     // 指令有效
+    output reg  [31:0]  inst_out,       // 指令输出
+    // 读总线接口
+    input  wire         dev_rrdy,       // 总线读就绪
+    output wire [ 3:0]  cpu_ren,        // 读使能 (组合)
+    output wire [31:0]  cpu_raddr,      // 读地址(组合)
+    input  wire         dev_rvalid,     // 总线数据有效
+    input  wire [`IC_BLK_SIZE-1:0] dev_rdata  // 总线数据(128位)
 );
 
-    localparam INDEX_W = 6;  // 64 lines
+    localparam INDEX_W = 6;  // 64行
     localparam TAG_W   = 5;
 
     localparam ST_IDLE  = 2'd0;

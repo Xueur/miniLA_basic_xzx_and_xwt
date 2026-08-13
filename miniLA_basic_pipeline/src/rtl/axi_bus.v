@@ -2,7 +2,7 @@
 
 `include "defines.vh"
 
-// AXI4 Bus Controller — ported from reference miniRV axi_master
+
 //   Read:  IDLE → RADDR → RDATA → IDLE
 //   Write: IDLE → WRITE → WRESP → IDLE
 //   Priority: DCache > ICache
@@ -88,13 +88,13 @@ module axi_bus #(
     assign m_axi_araddr  = {read_addr[31:4], 4'h0};
     assign m_axi_arlen   = 8'd3;           // 4-beat burst (128 bits)
     assign m_axi_arsize  = 3'd2;           // 4 bytes per beat
-    assign m_axi_arburst = 2'b01;          // INCR
+    assign m_axi_arburst = 2'b01;          // 递增
     assign m_axi_arvalid = state == ST_RADDR;
     assign m_axi_rready  = state == ST_RDATA;
 
     // ---- AXI4 Write Channel ----
     assign m_axi_awaddr  = write_addr;
-    assign m_axi_awlen   = 8'd0;           // single beat
+    assign m_axi_awlen   = 8'd0;           // 单拍
     assign m_axi_awsize  = 3'd2;
     assign m_axi_awburst = 2'b01;
     assign m_axi_awvalid = state == ST_WRITE && !aw_done;
